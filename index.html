@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D510 復習ドリル</title>
+</head>
+<body>
+<style>
+:root{
+  --paper:#f6f7f3; --card:#ffffff; --ink:#232f3a; --sub:#5c6b76;
+  --line:#d7ddd3; --ai:#33517e; --ai-soft:#e7edf6;
+  --shu:#c8371f; --shu-soft:#faeae6; --figfill:#eceee8; --figline:#8a938c;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#161b21; --card:#1e242c; --ink:#e6e9e2; --sub:#9aa7b0;
+  --line:#37414b; --ai:#8fb3e6; --ai-soft:#25303f;
+  --shu:#f07a5f; --shu-soft:#3a2621; --figfill:#2a313a; --figline:#6b7681;
+}}
+:root[data-theme="dark"]{
+  --paper:#161b21; --card:#1e242c; --ink:#e6e9e2; --sub:#9aa7b0;
+  --line:#37414b; --ai:#8fb3e6; --ai-soft:#25303f;
+  --shu:#f07a5f; --shu-soft:#3a2621; --figfill:#2a313a; --figline:#6b7681;
+}
+:root[data-theme="light"]{
+  --paper:#f6f7f3; --card:#ffffff; --ink:#232f3a; --sub:#5c6b76;
+  --line:#d7ddd3; --ai:#33517e; --ai-soft:#e7edf6;
+  --shu:#c8371f; --shu-soft:#faeae6; --figfill:#eceee8; --figline:#8a938c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+  font-size:15px;line-height:1.7}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 90px}
+h1,h2,.utitle{font-family:"Yu Mincho","Hiragino Mincho ProN","MS PMincho",serif}
+header.app{display:flex;align-items:baseline;gap:12px;border-bottom:3px double var(--ink);
+  padding:10px 0 8px;margin-bottom:18px;flex-wrap:wrap}
+header.app h1{font-size:26px;margin:0;letter-spacing:.06em}
+header.app .sub{color:var(--sub);font-size:12.5px;letter-spacing:.14em}
+.crumb{background:none;border:none;color:var(--ai);font-size:13.5px;cursor:pointer;padding:4px 0;
+  text-decoration:underline;text-underline-offset:3px;font-family:inherit}
+/* home */
+.ucard{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:18px 20px;margin-bottom:14px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.ucode{font-family:Georgia,serif;font-size:13px;color:var(--sub);letter-spacing:.1em;
+  writing-mode:horizontal-tb;border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+.utitle{font-size:20px;flex:1;min-width:150px}
+.ubtns{display:flex;gap:8px}
+button.go{font-family:inherit;font-size:14px;cursor:pointer;border-radius:8px;padding:9px 18px;
+  border:1.5px solid var(--ai);background:var(--card);color:var(--ai)}
+button.go.test{background:var(--ai);color:var(--card)}
+button.go:hover{filter:brightness(1.06)}
+/* problems */
+.gtitle{font-size:17px;margin:30px 0 4px;padding-left:10px;border-left:5px solid var(--ai)}
+.gnote{color:var(--sub);font-size:12.5px;margin:0 0 12px;padding-left:15px}
+.prob{background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px 14px;margin-bottom:12px;position:relative}
+.pq{display:flex;gap:14px;flex-wrap:wrap}
+.pq .qt{flex:1;min-width:240px;white-space:pre-line}
+.pq .qn{font-weight:700;color:var(--ai)}
+.pt{color:var(--sub);font-size:12px;margin-left:6px}
+.fg{width:200px;max-width:45vw;flex-shrink:0;align-self:center;color:var(--ink)}
+.fields{display:flex;gap:14px 22px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.fld{display:flex;align-items:center;gap:6px;font-size:14px}
+.fld input{font-family:inherit;font-size:15px;padding:6px 8px;width:110px;
+  border:none;border-bottom:1.6px solid var(--ink);background:transparent;color:var(--ink);
+  border-radius:0;text-align:center}
+.fld input.wide{width:250px;max-width:62vw}
+.fld input:focus{outline:none;border-bottom-color:var(--ai);box-shadow:0 2px 0 0 var(--ai)}
+.actions{display:flex;align-items:center;gap:14px;margin-top:12px;flex-wrap:wrap}
+button.chk{font-family:inherit;font-size:13.5px;cursor:pointer;border-radius:7px;
+  padding:7px 16px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink)}
+button.chk:hover{border-color:var(--shu);color:var(--shu)}
+.mark{font-size:30px;line-height:1;font-weight:700;min-width:36px}
+.mark.ok{color:var(--shu)}
+.mark.ng{color:var(--ai)}
+details.ex{margin-top:10px;font-size:13.5px;border-top:1px dashed var(--line);padding-top:8px}
+details.ex summary{cursor:pointer;color:var(--ai);font-size:13px}
+details.ex .body{white-space:pre-line;margin-top:6px;color:var(--sub)}
+details.ex .ansv{color:var(--shu);font-weight:700}
+/* test bar */
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:2px solid var(--ink);
+  display:flex;align-items:center;gap:18px;padding:10px 2px;margin-bottom:16px;flex-wrap:wrap}
+.bar .tmr{font-family:Georgia,serif;font-variant-numeric:tabular-nums;font-size:24px}
+.bar .tmr.low{color:var(--shu)}
+.bar .sc{font-size:14px;color:var(--sub)}
+.bar .sc b{font-size:20px;color:var(--shu);font-family:Georgia,serif}
+button.submit{font-family:inherit;font-size:15px;cursor:pointer;border-radius:8px;
+  padding:10px 26px;border:none;background:var(--shu);color:#fff;letter-spacing:.1em}
+.resultbox{background:var(--card);border:2px solid var(--shu);border-radius:12px;
+  padding:20px 24px;margin:20px 0;text-align:center}
+.resultbox .big{font-family:Georgia,serif;font-size:46px;color:var(--shu)}
+.resultbox .lbl{color:var(--sub);font-size:13px;letter-spacing:.15em}
+.prog{font-size:13.5px;color:var(--sub);margin:4px 0 14px}
+.prog b{color:var(--shu);font-size:17px}
+/* records */
+.rectbl{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;background:var(--card);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.rectbl th,.rectbl td{padding:8px 14px;border-bottom:1px solid var(--line);text-align:left}
+.rectbl tr:last-child td{border-bottom:none}
+.rectbl th{font-size:11.5px;color:var(--sub);letter-spacing:.12em;font-weight:600;background:var(--ai-soft)}
+.rectbl td.scr{font-family:Georgia,serif;font-size:19px;color:var(--shu);font-variant-numeric:tabular-nums}
+.chip{display:inline-block;font-size:11.5px;border:1px solid var(--line);border-radius:20px;padding:1px 10px;color:var(--sub);background:var(--card)}
+.dayrow{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 16px;
+  margin-bottom:8px;display:flex;gap:6px 18px;flex-wrap:wrap;align-items:baseline}
+.dayrow .d{font-family:Georgia,serif;font-size:14.5px;min-width:78px;font-variant-numeric:tabular-nums}
+.dayrow .u{font-size:13.5px}
+.dayrow .u b{color:var(--shu)}
+.trend{display:flex;gap:10px 26px;flex-wrap:wrap;margin:12px 0 6px}
+.trend .tu{display:flex;align-items:center;gap:8px;font-size:13px}
+button.mini{font-family:inherit;font-size:12px;cursor:pointer;border-radius:6px;padding:5px 12px;
+  border:1px solid var(--line);background:var(--card);color:var(--sub)}
+button.mini:hover{color:var(--shu);border-color:var(--shu)}
+.empty{color:var(--sub);font-size:13.5px;background:var(--card);border:1px dashed var(--line);
+  border-radius:10px;padding:16px;text-align:center}
+footer{color:var(--sub);font-size:11.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:10px}
+@media (max-width:560px){ .fg{width:170px} header.app h1{font-size:22px} }
+@media (prefers-reduced-motion: no-preference){
+  .mark{animation:pop .18s ease-out} @keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<pattern id="ht" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+<rect width="6" height="6" fill="var(--figfill)"/>
+<line x1="0" y1="0" x2="0" y2="6" stroke="var(--figline)" stroke-width="1.1"/>
+</pattern></defs></svg>
+
+<div class="wrap">
+<header class="app">
+  <h1>D510 復習ドリル</h1>
+  <span class="sub">小5算数　類似問題・模擬テスト</span>
+  <span style="flex:1"></span>
+  <button class="crumb" id="home" hidden>← 単元選択にもどる</button>
+</header>
+<div id="view"></div>
+<footer>円周率はすべて 3.14 とします。答えは数字で入力（複数あるときは「, 」区切り、素因数分解は「2×2×5」のように）。</footer>
+</div>
+
+<script>
+"use strict";
+/* ---------- SVG figure helpers (math coords, y-up; py flips) ---------- */
+const R1=v=>Math.round(v*10)/10;
+const px=(cx,r,a)=>R1(cx+r*Math.cos(a*Math.PI/180));
+const py=(cy,r,a)=>R1(cy-r*Math.sin(a*Math.PI/180));
+const ST='stroke="var(--ink)" stroke-width="1.3"';
+function wedge(cx,cy,r,a1,a2,fill){
+  const la=((a2-a1)%360+360)%360>180?1:0;
+  return `<path d="M${cx},${cy} L${px(cx,r,a1)},${py(cy,r,a1)} A${r},${r} 0 ${la} 0 ${px(cx,r,a2)},${py(cy,r,a2)} Z" fill="${fill}" ${ST}/>`;
+}
+function arc(cx,cy,r,a1,a2){
+  const la=((a2-a1)%360+360)%360>180?1:0;
+  return `<path d="M${px(cx,r,a1)},${py(cy,r,a1)} A${r},${r} 0 ${la} 0 ${px(cx,r,a2)},${py(cy,r,a2)}" fill="none" ${ST} stroke-width="1.5"/>`;
+}
+const HT='url(#ht)', WHT='var(--card)';
+const txt=(x,y,s,fs=11,anc='middle')=>`<text x="${x}" y="${y}" font-size="${fs}" text-anchor="${anc}" fill="var(--ink)" font-family="inherit">${s}</text>`;
+const ln=(x1,y1,x2,y2,d)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${ST}${d?' stroke-dasharray="4 3"':''}/>`;
+const rc=(x,y,w,h,fill)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" ${ST}/>`;
+const pg=(pts,fill)=>`<polygon points="${pts.map(p=>p.join(',')).join(' ')}" fill="${fill}" ${ST}/>`;
+const sv=(w,h,inner)=>`<svg class="fg" viewBox="0 0 ${w} ${h}" role="img">${inner}</svg>`;
+
+const F={
+ circle:(lab,diam)=>sv(170,168, `<circle cx="85" cy="78" r="58" fill="var(--figfill)" ${ST}/>`+
+   (diam?ln(27,78,143,78)+txt(85,72,lab):ln(85,78,143,78)+`<circle cx="85" cy="78" r="2" fill="var(--ink)"/>`+txt(114,72,lab))),
+ sqCircle:(lab)=>sv(170,168, rc(28,18,114,114,HT)+`<circle cx="85" cy="75" r="57" fill="${WHT}" ${ST}/>`+txt(85,152,lab)),
+ semi2:(lab,lab2)=>sv(220,128, wedge(110,100,92,0,180,HT)+wedge(64,100,46,0,180,WHT)+wedge(156,100,46,0,180,WHT)+ln(18,100,202,100)+txt(110,118,lab)+txt(64,94,lab2,10)),
+ sector:(ang,lab)=>{const r=68,cx=ang>180?85:60,cy=ang>180?82:118;
+   let s=wedge(cx,cy,r,0,ang,'var(--figfill)')+txt(cx+r/2,cy+15,lab);
+   const am=ang/2;s+=`<text x="${px(cx,r*0.55,am)}" y="${py(cy,r*0.55,am)+4}" font-size="11" text-anchor="middle" fill="var(--ink)">${ang}°</text>`;
+   return sv(170,ang>180?168:150,s);},
+ sqQuarter:(lab)=>sv(170,160, rc(30,18,112,112,HT)+wedge(30,130,112,0,90,WHT)+`<path d="M30,18 h112 v112" fill="none" ${ST}/>`+txt(86,150,lab)),
+ segment:(lab,square)=>{let s=wedge(30,130,110,0,90,HT)+pg([[30,130],[140,130],[30,20]],WHT);
+   if(square)s+=`<rect x="30" y="20" width="110" height="110" fill="none" ${ST}/>`+ln(140,130,30,20);
+   return sv(170,160,s+txt(86,150,lab));},
+ leaf:(lab)=>{const d=`M140,130 A110,110 0 0 0 30,20 A110,110 0 0 0 140,130 Z`;
+   return sv(170,160,`<path d="${d}" fill="${HT}" ${ST}/>`+`<rect x="30" y="20" width="110" height="110" fill="none" ${ST}/>`+txt(86,150,lab));},
+ rectSemi:(wl,hl)=>sv(230,140, rc(20,20,180,90,HT)+wedge(110,110,90,0,180,WHT)+txt(110,128,wl)+txt(212,70,hl,10)),
+ semiTri:(lab)=>sv(230,132, wedge(115,105,92,0,180,HT)+pg([[23,105],[207,105],[115,13]],WHT)+txt(115,124,lab)),
+ semiPath:(ab,ac)=>{const A=20,B=200,c=A+(B-A)*ac/ab,r1=(c-A)/2,r2=(B-c)/2;
+   let s=ln(A,78,B,78)+arc(110,78,90,0,180)+arc(A+r1,78,r1,180,360)+arc(c+r2,78,r2,180,360);
+   [[A,'A'],[c,'C'],[B,'B']].forEach(p=>{s+=`<circle cx="${p[0]}" cy="78" r="2" fill="var(--ink)"/>`+txt(p[0],72,p[1],10)});
+   s+=txt(110,-2+14,'イ',11)+txt(A+r1,78+r1+13,'ロ',11)+txt(c+r2,78+r2+13,'ハ',11);
+   return sv(220,150,s);},
+ semiUp:(lab)=>{const A=20,B=200;let s=ln(A,115,B,115)+arc(110,115,90,0,180)+arc(80,115,60,0,180)+arc(170,115,30,0,180);
+   s+=txt(A,130,'A',10)+txt(B,130,'B',10)+txt(110,131,lab);return sv(220,140,s);},
+ ring:(ang,fr,li,lo)=>{const r=86,cx=ang>100?110:40,cy=120;
+   let s=wedge(cx,cy,r,0,ang,HT)+wedge(cx,cy,r*fr,0,ang,WHT);
+   s+=txt(cx+r*fr/2,cy+14,li,10)+txt(cx+r*fr+(r-r*fr)/2,cy+14,lo,10);
+   const am=ang/2;s+=`<text x="${px(cx,r*fr*0.5,am)}" y="${py(cy,r*fr*0.5,am)+4}" font-size="10.5" text-anchor="middle" fill="var(--ink)">${ang}°</text>`;
+   return sv(ang>100?225:150,150,s);},
+ polySec:(kind,lab)=>{
+   let pts,r,W=210,H=180;
+   if(kind==='tri'){pts=[[55,140],[165,140],[125,62]];r=38;}
+   else if(kind==='quad'){pts=[[55,140],[160,132],[148,62],[72,70]];r=33;}
+   else{const c=[105,100],rr=52;pts=[];for(let i=0;i<5;i++){const a=234+i*72;pts.push([px(c[0],rr,a),py(c[1],rr,a)])}r=30;}
+   let s='';const n=pts.length;
+   for(let i=0;i<n;i++){const v=pts[i],p=pts[(i-1+n)%n],q=pts[(i+1)%n];
+     const ang=(dx,dy)=>Math.atan2(-(dy),dx)*180/Math.PI;
+     s+=wedge(v[0],v[1],r,ang(p[0]-v[0],p[1]-v[1]),ang(q[0]-v[0],q[1]-v[1]),HT);}
+   s+=pg(pts,WHT);
+   const v0=pts[0];s+=ln(v0[0],v0[1],v0[0]-r*0.7,v0[1]+r*0.7)+`<rect x="${v0[0]-r*0.9-16}" y="${v0[1]+r*0.9-2}" width="34" height="13" fill="var(--card)"/>`+txt(v0[0]-r*0.8,v0[1]+r*1.05,lab,10);
+   return sv(W,H,s);},
+ barn:(bw,bh,L,wl,hl,rl)=>{const s=118/(2*L),ox=105,oy=95;
+   const M=(x,y)=>[R1(ox+s*x),R1(oy-s*y)];const c=M(bw,0);
+   let g=wedge(c[0],c[1],s*L,-180,90,HT);
+   if(L>bh){const t=M(bw,bh);g+=wedge(t[0],t[1],s*(L-bh),90,180,HT);}
+   if(L>bw){const o=M(0,0);g+=wedge(o[0],o[1],s*(L-bw),180,270,HT);}
+   const a=M(0,bh);g+=rc(a[0],a[1],s*bw,s*bh,WHT);
+   g+=txt(ox+s*bw/2,oy-s*bh/2+4,'小屋',9.5);
+   g+=`<rect x="${ox+s*bw/2-16}" y="${oy-s*bh-16}" width="32" height="13" fill="var(--card)"/>`+txt(ox+s*bw/2,oy-s*bh-6,wl,9.5);
+   g+=txt(ox-s*bw-8,oy-s*bh/2+3,hl,9.5);
+   g+=`<circle cx="${c[0]}" cy="${c[1]}" r="2.6" fill="var(--ink)"/>`+ln(c[0],c[1],px(c[0],s*L,-40),py(c[1],s*L,-40),1);
+   g+=`<rect x="${px(c[0],s*L*0.55,-40)-17}" y="${py(c[1],s*L*0.55,-40)+2}" width="36" height="13" fill="var(--card)"/>`+txt(px(c[0],s*L*0.55,-40)+1,py(c[1],s*L*0.55,-40)+12,rl,9.5);
+   return sv(230,200,g);},
+ windSq:(sd,L,sl,ll)=>{const s=95/L,ox=112,oy=112;const S=s*sd;
+   const cs=[[0,0],[0,S],[S,S],[S,0]],th=[[90,180],[0,90],[270,360],[180,270]];
+   let g='';for(let i=0;i<4;i++){const r=s*L-i*S;if(r>0.5)g+=wedge(ox+cs[i][0],oy-cs[i][1],r,th[i][0],th[i][1],HT);}
+   g+=rc(ox,oy-S,S,S,WHT)+txt(ox+S/2,oy-S/2+4,sl,9.5);
+   g+=ln(ox,oy,ox-s*L,oy)+`<circle cx="${ox-s*L}" cy="${oy}" r="2.4" fill="var(--ink)"/>`;
+   g+=`<rect x="${ox-s*L/2-19}" y="${oy-16}" width="40" height="13" fill="var(--card)"/>`+txt(ox-s*L/2,oy-6,ll,9.5);
+   g+=`<path d="M${ox-s*L},${oy-8} Q${ox-s*L-14},${oy-s*L*0.5} ${ox-s*L*0.88},${oy-s*L*0.55}" fill="none" ${ST} marker-end="url(#ah)"/>`;
+   return sv(230,208,'<defs><marker id="ah" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--ink)"/></marker></defs>'+g);},
+ windTri:(sd,L,sl,ll)=>{const s=88/L,ox=108,oy=140;const S=s*sd,h=S*Math.sqrt(3)/2;
+   const T0=[ox,oy],T1=[ox+S,oy],T2=[ox+S/2,oy-h];
+   let g=wedge(T0[0],T0[1],s*L,60,180,HT);
+   if(L-sd>0.5)g+=wedge(T2[0],T2[1],s*(L-sd),-60,60,HT);
+   if(L-2*sd>0.5)g+=wedge(T1[0],T1[1],s*(L-2*sd),180,300,HT);
+   g+=pg([T0,T1,T2],WHT);
+   g+=`<rect x="${ox+S/2-16}" y="${oy+4}" width="32" height="13" fill="var(--card)"/>`+txt(ox+S/2,oy+14,sl,9.5);
+   g+=ln(ox,oy,ox-s*L,oy)+`<circle cx="${ox-s*L}" cy="${oy}" r="2.4" fill="var(--ink)"/>`;
+   g+=`<rect x="${ox-s*L/2-21}" y="${oy-16}" width="44" height="13" fill="var(--card)"/>`+txt(ox-s*L/2,oy-6,ll,9.5);
+   return sv(230,200,g);},
+ dogSq:(sd,L,sl,ll)=>{const s=82/L,ox=105,oy=105;const S=s*sd,LL=s*L;
+   let g=wedge(ox,oy,LL,90,360,HT);
+   if(L>sd){g+=wedge(ox+S,oy,LL-S,0,90,HT)+wedge(ox,oy-S,LL-S,0,90,HT);}
+   g+=rc(ox,oy-S,S,S,WHT)+txt(ox+S/2,oy-S*0.55,'さく',9)+txt(ox+S/2,oy-S*0.18,sl,9);
+   g+=`<circle cx="${ox}" cy="${oy}" r="3" fill="var(--ink)"/>`+ln(ox,oy,px(ox,LL,225),py(oy,LL,225),1);
+   g+=`<rect x="${px(ox,LL*0.55,225)-14}" y="${py(oy,LL*0.55,225)+3}" width="28" height="13" fill="var(--card)"/>`+txt(px(ox,LL*0.55,225),py(oy,LL*0.55,225)+13,ll,9.5);
+   return sv(215,205,g);},
+ dogTri:(sd,L,sl,ll)=>{const s=80/L,ox=100,oy=98;const S=s*sd,LL=s*L,h=S*Math.sqrt(3)/2;
+   const T1=[ox+S,oy],T2=[ox+S/2,oy-h];
+   let g=wedge(ox,oy,LL,60,360,HT);
+   if(L>sd){g+=wedge(T1[0],T1[1],LL-S,0,120,HT)+wedge(T2[0],T2[1],LL-S,60,180,HT);}
+   g+=pg([[ox,oy],T1,T2],WHT)+txt(ox+S/2,oy-h/3+3,'さく',9);
+   g+=`<rect x="${ox+S+2}" y="${oy-h/2-14}" width="26" height="13" fill="var(--card)"/>`+txt(ox+S+15,oy-h/2-4,sl,9);
+   g+=`<circle cx="${ox}" cy="${oy}" r="3" fill="var(--ink)"/>`+ln(ox,oy,px(ox,LL,225),py(oy,LL,225),1);
+   g+=`<rect x="${px(ox,LL*0.55,225)-14}" y="${py(oy,LL*0.55,225)+3}" width="28" height="13" fill="var(--card)"/>`+txt(px(ox,LL*0.55,225),py(oy,LL*0.55,225)+13,ll,9.5);
+   return sv(215,200,g);},
+ rect:(wl,hl)=>sv(210,130, rc(30,20,160,86,'none')+txt(110,122,wl)+txt(16,66,hl,10)),
+ box:(wl,dl,hl)=>{const x=25,y=45,w=135,h=68,dx=32,dy=22;
+   let g=rc(x,y,w,h,'none')+pg([[x,y],[x+dx,y-dy],[x+dx+w,y-dy],[x+w,y]],'none')+pg([[x+w,y],[x+w+dx,y-dy],[x+w+dx,y-dy+h],[x+w,y+h]],'none');
+   return sv(215,140,g+txt(x+w/2,y+h+16,wl)+txt(x+w+dx-14,y-dy-6,dl,10)+txt(x+w+dx+4,y+h/2,hl,10,'start'));},
+ overlap:(wl,hl,ol)=>{let g=rc(20,40,88,52,'none')+rc(96,40,88,52,'none')+rc(96,40,12,52,'var(--figfill)');
+   g+=txt(60,108,wl,10)+txt(8,68,hl,9)+txt(102,20,ol,9)+ln(102,24,102,38);
+   return sv(210,118,g);},
+ gaptile:(wl,hl,gl)=>{let g='';for(let i=0;i<2;i++)for(let j=0;j<2;j++)g+=rc(20+i*100,14+j*62,80,44,'none');
+   g+=txt(60,124,wl,10)+txt(8,38,hl,9)+txt(110,136,gl,9)+ln(110,128,110,108);
+   return sv(215,142,g);}
+};
+
+/* ---------- answer checking ---------- */
+function nums(s){const m=(s||'').replace(/[，、]/g,',').match(/\d+(?:\.\d+)?/g);return m?m.map(Number):[];}
+function eqList(a,b){if(a.length!==b.length)return false;const x=[...a].sort((p,q)=>p-q),y=[...b].sort((p,q)=>p-q);return x.every((v,i)=>Math.abs(v-y[i])<0.005);}
+function checkField(input,ans){
+  const got=nums(input);
+  if(Array.isArray(ans))return eqList(got,ans);
+  if(ans.p){ if(got.length!==ans.p.length*2)return false;
+    const gp=[];for(let i=0;i<got.length;i+=2)gp.push([got[i],got[i+1]].sort((a,b)=>a-b));
+    gp.sort((a,b)=>a[0]-b[0]);
+    const ep=ans.p.map(q=>[...q].sort((a,b)=>a-b)).sort((a,b)=>a[0]-b[0]);
+    return ep.every((e,i)=>e[0]===gp[i][0]&&e[1]===gp[i][1]); }
+  return false;
+}
+const fmtAns=a=>Array.isArray(a)?a.join(', '):a.p.map(q=>'('+q.join(', ')+')').join(', ');
+
+/* ---------- problem data ---------- */
+/* field: [label, unit, answer, wide?] answer: [nums] or {p:[[a,b],...]} */
+const U = [
+{code:'D510-02', name:'平面図形（２）', practice:[
+ {g:'① 円の基本', p:[
+  {q:'円のまわりの長さと面積を求めなさい。',fig:()=>F.circle('5cm'),f:[['まわりの長さ','cm',[31.4]],['面積','cm²',[78.5]]],ex:'まわり 5×2×3.14＝31.4cm\n面積 5×5×3.14＝78.5cm²'},
+  {q:'円のまわりの長さと面積を求めなさい。',fig:()=>F.circle('16cm',1),f:[['まわりの長さ','cm',[50.24]],['面積','cm²',[200.96]]],ex:'半径は16÷2＝8cm。まわり 16×3.14＝50.24cm、面積 8×8×3.14＝200.96cm²'},
+  {q:'1辺8cmの正方形の中にちょうど入る円をかきました。斜線部分の面積を求めなさい。',fig:()=>F.sqCircle('8cm'),f:[['答え','cm²',[13.76]]],ex:'正方形−円＝8×8−4×4×3.14＝64−50.24＝13.76cm²'},
+  {q:'直径20cmの半円の中に、直径10cmの半円を2つかきました。斜線部分の面積を求めなさい。',fig:()=>F.semi2('20cm','10cm'),f:[['答え','cm²',[78.5]]],ex:'10×10×3.14÷2−5×5×3.14÷2×2＝157−78.5＝78.5cm²'}]},
+ {g:'② おうぎ形', p:[
+  {q:'おうぎ形の弧の長さと面積を求めなさい。',fig:()=>F.sector(60,'6cm'),f:[['弧の長さ','cm',[6.28]],['面積','cm²',[18.84]]],ex:'弧 6×2×3.14×60/360＝6.28cm、面積 6×6×3.14×60/360＝18.84cm²'},
+  {q:'おうぎ形のまわりの長さと面積を求めなさい。',fig:()=>F.sector(120,'9cm'),f:[['まわりの長さ','cm',[36.84]],['面積','cm²',[84.78]]],ex:'まわり＝弧＋半径2本＝18.84＋18＝36.84cm、面積 84.78cm²'},
+  {q:'おうぎ形のまわりの長さと面積を求めなさい。',fig:()=>F.sector(225,'8cm'),f:[['まわりの長さ','cm',[47.4]],['面積','cm²',[125.6]]],ex:'弧 8×2×3.14×225/360＝31.4、まわり 31.4＋16＝47.4cm\n面積 8×8×3.14×225/360＝125.6cm²'},
+  {q:'1辺6cmの正方形とおうぎ形を組み合わせた図形です。斜線部分の面積を求めなさい。',fig:()=>F.sqQuarter('6cm'),f:[['答え','cm²',[7.74]]],ex:'正方形−四分円＝36−28.26＝7.74cm²'},
+  {q:'直角三角形とおうぎ形（半径6cm）を組み合わせた図形です。斜線部分の面積を求めなさい。',fig:()=>F.segment('6cm'),f:[['答え','cm²',[10.26]]],ex:'四分円−直角三角形＝28.26−18＝10.26cm²'}]},
+ {g:'③ 半円の並びと計算の工夫', p:[
+  {q:'3つの半円を並べた図で、AB＝20cm、AC＝12cmです。\n(1) イを通って行く道のりは何cm？　(2) ロとハを通って行く道のりは何cm？',fig:()=>F.semiPath(20,12),f:[['(1)','cm',[31.4]],['(2)','cm',[31.4]]],ex:'(1) 20×3.14÷2＝31.4cm\n(2) (12＋8)×3.14÷2＝31.4cm → どちらも同じ！'},
+  {q:'3つの半円を一直線上に並べました。AB＝24cmのとき、3つの半円の弧の長さの合計は？',fig:()=>F.semiUp('24cm'),f:[['答え','cm',[75.36]]],ex:'大きい弧＝24×3.14÷2＝37.68。小さい2つの弧の和も直径の和が24cmだから37.68。合計75.36cm'},
+  {q:'斜線部分の面積を求めなさい。',fig:()=>F.ring(90,0.5,'4cm','4cm'),f:[['答え','cm²',[37.68]]],ex:'(8×8−4×4)×3.14×1/4＝48×3.14÷4＝37.68cm²'},
+  {q:'斜線部分の面積を求めなさい。',fig:()=>F.ring(120,1/3,'3cm','6cm'),f:[['答え','cm²',[75.36]]],ex:'外側の半径は3＋6＝9cm。(81−9)×3.14×120/360＝75.36cm²'}]},
+ {g:'④ 複合図形', p:[
+  {q:'1辺10cmの正方形とおうぎ形と対角線を組み合わせました。斜線部分の面積を求めなさい。',fig:()=>F.segment('10cm',1),f:[['答え','cm²',[28.5]]],ex:'四分円−直角三角形＝78.5−50＝28.5cm²'},
+  {q:'1辺10cmの正方形の中におうぎ形を2つかきました。斜線部分（葉っぱ形）の面積を求めなさい。',fig:()=>F.leaf('10cm'),f:[['答え','cm²',[57]]],ex:'四分円×2−正方形＝78.5×2−100＝57cm²'},
+  {q:'たて6cm・横12cmの長方形と半円を組み合わせました。斜線部分の面積を求めなさい。',fig:()=>F.rectSemi('12cm','6cm'),f:[['答え','cm²',[15.48]]],ex:'長方形−半円＝72−56.52＝15.48cm²'},
+  {q:'直径8cmの半円と三角形を組み合わせました。斜線部分の面積を求めなさい。',fig:()=>F.semiTri('8cm'),f:[['答え','cm²',[9.12]]],ex:'半円−三角形＝25.12−16＝9.12cm²'}]},
+ {g:'⑤ 中心角の和', p:[
+  {q:'三角形の3つの頂点を中心に半径6cmのおうぎ形を3つかきました。\n(1) 中心角の和は何度？　(2) 弧の長さの和は何cm？',fig:()=>F.polySec('tri','6cm'),f:[['(1)','度',[900]],['(2)','cm',[94.2]]],ex:'(1) 360×3−180＝900度\n(2) 6×2×3.14×900/360＝94.2cm'},
+  {q:'正五角形の5つの頂点を中心に半径2cmのおうぎ形を5つかきました。\n(1) 中心角の和は何度？　(2) 弧の長さの和は何cm？',fig:()=>F.polySec('pent','2cm'),f:[['(1)','度',[1260]],['(2)','cm',[43.96]]],ex:'(1) 360×5−540＝1260度\n(2) 2×2×3.14×1260/360＝43.96cm'}]},
+ {g:'⑥ 牛小屋', p:[
+  {q:'たて2m・横4mの牛小屋の角に、長さ6mの綱で牛がつながれています。牛の動ける範囲の面積は？（牛は小屋に入れません）',fig:()=>F.barn(4,2,6,'4m','2m','綱6m'),f:[['答え','m²',[100.48]]],ex:'半径6の3/4円＋半径2の1/4円＋半径4の1/4円＝(27＋1＋4)×3.14＝100.48m²'},
+  {q:'たて6m・横8mの牛小屋の角に、長さ10mの綱で牛がつながれています。牛の動ける範囲の面積は？',fig:()=>F.barn(8,6,10,'8m','6m','綱10m'),f:[['答え','m²',[251.2]]],ex:'(75＋4＋1)×3.14＝80×3.14＝251.2m²'}]},
+ {g:'⑦ 糸巻き', p:[
+  {q:'1辺2cmの正方形の頂点に長さ6cmの糸を固定し、ぴんと張ったまま巻きつけます。\n(1) 糸の先端が動いたあとの長さは？　(2) 糸が通った部分の面積は？',fig:()=>F.windSq(2,6,'2cm','糸6cm'),f:[['(1)','cm',[18.84]],['(2)','cm²',[43.96]]],ex:'半径6→4→2の四分円。\n(1) (6＋4＋2)×2×3.14÷4＝18.84cm\n(2) (36＋16＋4)×3.14÷4＝43.96cm²'},
+  {q:'1辺6cmの正三角形の頂点に長さ12cmの糸を固定し、巻きつけます。\n(1) 糸の先端が動いたあとの長さは？　(2) 糸が通った部分の面積は？',fig:()=>F.windTri(6,12,'6cm','糸12cm'),f:[['(1)','cm',[37.68]],['(2)','cm²',[188.4]]],ex:'半径12→6の120°おうぎ形。\n(1) (12＋6)×2×3.14÷3＝37.68cm\n(2) (144＋36)×3.14÷3＝188.4cm²'}]},
+ {g:'⑧ 犬が動ける範囲', p:[
+  {q:'犬が黒丸の位置に長さ6mのひもでつながれています。1辺4mの正方形のさくの中には入れません。動ける範囲の面積は？',fig:()=>F.dogSq(4,6,'4m','6m'),f:[['答え','m²',[91.06]]],ex:'半径6の3/4円＋半径2の1/4円×2＝(27＋1＋1)×3.14＝91.06m²'},
+  {q:'犬が黒丸の位置に長さ9mのひもでつながれています。1辺6mの正三角形のさくの中には入れません。動ける範囲の面積は？',fig:()=>F.dogTri(6,9,'6m','9m'),f:[['答え','m²',[230.79]]],ex:'半径9の300°＋半径3の120°×2＝(67.5＋6)×3.14＝230.79m²'}]}
+],
+test:{min:30,p:[
+  {q:'円のまわりの長さと面積を求めなさい。',pt:10,fig:()=>F.circle('7cm'),f:[['まわり','cm',[43.96]],['面積','cm²',[153.86]]],ex:'43.96cm／153.86cm²'},
+  {q:'おうぎ形のまわりの長さと面積を求めなさい。',pt:10,fig:()=>F.sector(72,'10cm'),f:[['まわり','cm',[32.56]],['面積','cm²',[62.8]]],ex:'弧12.56＋20＝32.56cm／62.8cm²'},
+  {q:'斜線部分の面積を求めなさい。',pt:10,fig:()=>F.segment('8cm',1),f:[['答え','cm²',[18.24]]],ex:'四分円−三角形＝50.24−32＝18.24cm²'},
+  {q:'斜線部分の面積を求めなさい。',pt:10,fig:()=>F.ring(40,1/3,'3cm','6cm'),f:[['答え','cm²',[25.12]]],ex:'(81−9)×3.14×40/360＝25.12cm²'},
+  {q:'3つの半円を一直線上に並べました。AB＝18cmのとき、3つの半円の弧の長さの合計は？',pt:10,fig:()=>F.semiUp('18cm'),f:[['答え','cm',[56.52]]],ex:'28.26×2＝56.52cm'},
+  {q:'1辺8cmの正方形の中におうぎ形を2つかきました。斜線部分の面積を求めなさい。',pt:10,fig:()=>F.leaf('8cm'),f:[['答え','cm²',[36.48]]],ex:'50.24×2−64＝36.48cm²'},
+  {q:'四角形の4つの頂点を中心に半径3cmのおうぎ形を4つかきました。\n(1) 中心角の和は何度？　(2) 弧の長さの和は何cm？',pt:10,fig:()=>F.polySec('quad','3cm'),f:[['(1)','度',[1080]],['(2)','cm',[56.52]]],ex:'360×4−360＝1080度／3×2×3.14×3＝56.52cm'},
+  {q:'たて4m・横6mの牛小屋の角に、長さ10mの綱で牛がつながれています。牛の動ける範囲の面積は？',pt:15,fig:()=>F.barn(6,4,10,'6m','4m','綱10m'),f:[['答え','m²',[276.32]]],ex:'(75＋9＋4)×3.14＝276.32m²'},
+  {q:'1辺3cmの正方形の頂点に長さ12cmの糸を固定し、巻きつけます。\n(1) 先端が動いたあとの長さは？　(2) 糸が通った部分の面積は？',pt:15,fig:()=>F.windSq(3,12,'3cm','糸12cm'),f:[['(1)','cm',[47.1]],['(2)','cm²',[211.95]]],ex:'(12＋9＋6＋3)×2×3.14÷4＝47.1cm／270×3.14÷4＝211.95cm²'}]}
+},
+/* ---------------- D510-03 約数 ---------------- */
+{code:'D510-03', name:'約数', practice:[
+ {g:'① 素数と素因数分解・最大公約数', p:[
+  {q:'1以上40以下の素数を、小さい方から順にすべて書きなさい。',f:[['答え','',[2,3,5,7,11,13,17,19,23,29,31,37],1]],ex:'素数＝1とその数自身しか約数がない数。全部で12個'},
+  {q:'次の数を素因数分解しなさい。（例：12＝2×2×3）',f:[['20＝','',[2,2,5]],['36＝','',[2,2,3,3]]],ex:'20＝2×2×5、36＝2×2×3×3'},
+  {q:'次の数を素因数分解しなさい。',f:[['126＝','',[2,3,3,7]],['300＝','',[2,2,3,5,5]]],ex:'126＝2×3×3×7、300＝2×2×3×5×5'},
+  {q:'次の数を素因数分解しなさい。',f:[['858＝','',[2,3,11,13]],['875＝','',[5,5,5,7]]],ex:'858＝2×3×11×13、875＝5×5×5×7'},
+  {q:'次の数の約数をすべて答えなさい。\n(1) 24　(2) 45',f:[['(1)','',[1,2,3,4,6,8,12,24],1],['(2)','',[1,3,5,9,15,45],1]],ex:'ペアで書き出す：24→(1,24)(2,12)(3,8)(4,6)'},
+  {q:'次の各組の最大公約数を求めなさい。\n(1) (24, 36)　(2) (26, 65)　(3) (23, 40)　(4) (204, 255)',f:[['(1)','',[12]],['(2)','',[13]],['(3)','',[1]],['(4)','',[51]]],ex:'(4) 204＝2×2×3×17、255＝3×5×17 → 3×17＝51'},
+  {q:'次の各組の最大公約数を求めなさい。\n(1) (24, 60, 84)　(2) (36, 90, 126)　(3) (25, 33, 41)',f:[['(1)','',[12]],['(2)','',[18]],['(3)','',[1]]],ex:'3つの数すべてに共通する素因数をかける'},
+  {q:'次の各組の公約数をすべて書きなさい。\n(1) (36, 60)　(2) (42, 70, 98)',f:[['(1)','',[1,2,3,4,6,12],1],['(2)','',[1,2,7,14],1]],ex:'公約数＝最大公約数の約数。(1)GCD12 (2)GCD14'}]},
+ {g:'② 約数の個数', p:[
+  {q:'約数の個数が2個の数を、小さい方から順に8個書きなさい。',f:[['答え','',[2,3,5,7,11,13,17,19],1]],ex:'約数2個＝素数'},
+  {q:'約数の個数が3個の数を、小さい方から順に5個書きなさい。',f:[['答え','',[4,9,25,49,121],1]],ex:'約数3個＝同じ素数2個の積（素数の平方）'},
+  {q:'30以上50以下の整数のうち、約数の個数が4個の数をすべて書きなさい。',f:[['答え','',[33,34,35,38,39,46],1]],ex:'約数4個＝異なる素数2個の積、または同じ素数3個の積\n33,34,35,38,39,46'},
+  {q:'ある整数Aの約数は全部で8個あり、小さい順に並べると3番目が5、6番目が14です。\n(1) 4番目の数は？　(2) Aは？',f:[['(1)','',[7]],['(2)','',[70]]],ex:'5と14(＝2×7)が約数 → A＝2×5×7＝70\n約数：1,2,5,7,10,14,35,70'}]},
+ {g:'③ 同じ長さに分ける・□を割ると…', p:[
+  {q:'たて72cm・横120cmの長方形の紙から、むだなく同じ大きさの正方形を切り取ります。\n(1) いちばん大きい正方形の一辺は？　(2) そのとき何枚？',fig:()=>F.rect('120cm','72cm'),f:[['(1)','cm',[24]],['(2)','枚',[15]]],ex:'GCD(72,120)＝24 → 3×5＝15枚'},
+  {q:'同じ大きさの立方体をすきまなく積んで、たて48cm・横120cm・高さ72cmの直方体を作ります。\n(1) いちばん大きい立方体の一辺は？　(2) 何個必要？',fig:()=>F.box('120cm','48cm','72cm'),f:[['(1)','cm',[24]],['(2)','個',[30]]],ex:'GCD＝24 → 2×5×3＝30個'},
+  {q:'76を割るとあまりが4になる整数をすべて答えなさい。',f:[['答え','',[6,8,9,12,18,24,36,72],1]],ex:'76−4＝72の約数のうち、あまりの4より大きい数'},
+  {q:'131を割るとあまりが11になる整数のうち、最も小さい数は？',f:[['答え','',[12]]],ex:'131−11＝120の約数で11より大きい最小の数＝12'},
+  {q:'ある整数で100を割っても148を割ってもあまりが4になります。考えられる数をすべて答えなさい。',f:[['答え','',[6,8,12,16,24,48],1]],ex:'96と144の公約数（GCD48の約数）のうち4より大きい数'},
+  {q:'250を割ると10あまり、339を割ると3あまる整数のうち、最大と最小は？',f:[['最大','',[48]],['最小','',[12]]],ex:'240と336のGCD＝48。約数のうち10より大きいのは12,16,24,48'}]},
+ {g:'④ 同じように分ける・互除法・同じあまり', p:[
+  {q:'りんご50個・みかん76個・かき29個を子どもたちに同じ数ずつできるだけ多く分けたら、りんご2個・みかん4個・かき5個あまりました。\n(1) 子どもは何人？　(2) みかんは1人何個？',f:[['(1)','人',[24]],['(2)','個',[3]]],ex:'48,72,24のGCD＝24（あまり5より大きい）→24人\n76÷24＝3あまり4'},
+  {q:'AとBの和は60で、最大公約数は12です。A＜Bのとき、(A, B)の組をすべて答えなさい。',f:[['答え','',{p:[[12,48],[24,36]]},1]],ex:'ア＋イ＝5（互いに素）→(1,4)(2,3)→(12,48)(24,36)'},
+  {q:'AとBの和は140で、最大公約数は14です。A＜Bのとき、(A, B)の組をすべて答えなさい。',f:[['答え','',{p:[[14,126],[42,98]]},1]],ex:'ア＋イ＝10（互いに素）→(1,9)(3,7)→(14,126)(42,98)'},
+  {q:'たて24cm・横42cmの紙から、できるだけ大きい正方形を切り取ることをくり返します。全部で何枚？最後の正方形の一辺は？',f:[['枚数','枚',[5]],['長さ','cm',[6]]],ex:'42÷24＝1あまり18→24÷18＝1あまり6→18÷6＝3\n1＋1＋3＝5枚、最後は6cm'},
+  {q:'たて204cm・横527cmの紙で同じことをすると、全部で何枚？最後の一辺は？',f:[['枚数','枚',[8]],['長さ','cm',[17]]],ex:'527÷204＝2あまり119→204÷119＝1あまり85→119÷85＝1あまり34→85÷34＝2あまり17→34÷17＝2\n2＋1＋1＋2＋2＝8枚、17cm'},
+  {q:'3つの数 107、153、222 を1より大きい整数アで割ると、いずれも同じあまりイが出ました。',f:[['ア','',[23]],['イ','',[15]]],ex:'差46と69の公約数（GCD23）→ア＝23、107÷23＝4あまり15'},
+  {q:'今日はゆいさん8歳、おじいさん48歳の誕生日です。来年以降、おじいさんの年齢がゆいさんの年齢で割り切れるのは、ゆいさんが何歳のとき？すべて答えなさい。',f:[['答え','歳',[10,20,40],1]],ex:'年齢の差40がゆいさんの年齢で割り切れればよい\n→40の約数で8より大きい数：10, 20, 40'}]}
+],
+test:{min:30,p:[
+  {q:'(1) 1以上20以下の素数をすべて書きなさい。',pt:5,f:[['答え','',[2,3,5,7,11,13,17,19],1]],ex:'2,3,5,7,11,13,17,19'},
+  {q:'(2) 180を素因数分解しなさい。',pt:5,f:[['180＝','',[2,2,3,3,5]]],ex:'180＝2×2×3×3×5'},
+  {q:'次の数の約数をすべて答えなさい。\n(1) 32　(2) 63',pt:10,f:[['(1)','',[1,2,4,8,16,32],1],['(2)','',[1,3,7,9,21,63],1]],ex:'32：1,2,4,8,16,32／63：1,3,7,9,21,63'},
+  {q:'次の各組の最大公約数を求めなさい。\n(1) (28, 42)　(2) (51, 68)　(3) (31, 47)　(4) (96, 144, 168)',pt:20,f:[['(1)','',[14]],['(2)','',[17]],['(3)','',[1]],['(4)','',[24]]],ex:'14／17／1／24'},
+  {q:'60以上70以下の整数のうち、約数の個数が4個の数をすべて書きなさい。',pt:10,f:[['答え','',[62,65,69],1]],ex:'62＝2×31、65＝5×13、69＝3×23'},
+  {q:'たて126cm・横210cmの長方形の紙から、むだなく同じ大きさの正方形を切り取ります。\n(1) いちばん大きい正方形の一辺は？　(2) 何枚切り取れる？',pt:10,fig:()=>F.rect('210cm','126cm'),f:[['(1)','cm',[42]],['(2)','枚',[15]]],ex:'GCD＝42 → 3×5＝15枚'},
+  {q:'(1) 94を割るとあまりが4になる整数をすべて答えなさい。',pt:10,f:[['答え','',[5,6,9,10,15,18,30,45,90],1]],ex:'90の約数のうち4より大きい数'},
+  {q:'(2) 176を割ると6あまり、260を割ると5あまる整数のうち、最も大きい数は？',pt:10,f:[['答え','',[85]]],ex:'170と255のGCD＝85。85の約数で6より大：17,85→85'},
+  {q:'AとBの和は126で、最大公約数は18です。A＜Bのとき、(A, B)の組をすべて答えなさい。',pt:10,f:[['答え','',{p:[[18,108],[36,90],[54,72]]},1]],ex:'ア＋イ＝7→(1,6)(2,5)(3,4)'},
+  {q:'たて60cm・横84cmの紙から、できるだけ大きい正方形を切り取ることをくり返します。全部で何枚？最後の一辺は？',pt:10,f:[['枚数','枚',[5]],['長さ','cm',[12]]],ex:'84÷60＝1あまり24→60÷24＝2あまり12→24÷12＝2\n5枚、12cm'}]}
+},
+/* ---------------- D510-04 倍数 ---------------- */
+{code:'D510-04', name:'倍数', practice:[
+ {g:'① 倍数・公倍数・最小公倍数', p:[
+  {q:'次の整数の倍数を、小さい方から順に3つ書きなさい。\n(1) 6　(2) 9　(3) 21',f:[['(1)','',[6,12,18]],['(2)','',[9,18,27]],['(3)','',[21,42,63]]],ex:'6,12,18／9,18,27／21,42,63'},
+  {q:'次の2つの整数の公倍数を、小さい方から順に3つ書きなさい。\n(1) 4と6　(2) 10と25',f:[['(1)','',[12,24,36]],['(2)','',[50,100,150]]],ex:'公倍数＝最小公倍数の倍数'},
+  {q:'次の各組の最小公倍数を求めなさい。\n(1) (12, 20)　(2) (9, 45)　(3) (11, 29)　(4) (18, 25)',f:[['(1)','',[60]],['(2)','',[45]],['(3)','',[319]],['(4)','',[450]]],ex:'(3)(4)は共通の素因数がない→2数の積'},
+  {q:'次の各組の最小公倍数を求めなさい。\n(1) (8, 12, 20)　(2) (15, 18, 27)　(3) (10, 12, 15, 24)',f:[['(1)','',[120]],['(2)','',[270]],['(3)','',[120]]],ex:'120／270／120'},
+  {q:'1から300までの整数について。\n(1) 6の倍数は何個？　(2) 7の倍数は何個？　(3) 45の倍数は何個？',f:[['(1)','個',[50]],['(2)','個',[42]],['(3)','個',[6]]],ex:'300÷6＝50、300÷7＝42あまり6、300÷45＝6あまり30'},
+  {q:'1から150までの整数について。\n(1) 4の倍数は？　(2) 6の倍数は？　(3) 4と6の公倍数は？　(4) 4の倍数でも6の倍数でもない数は？',f:[['(1)','個',[37]],['(2)','個',[25]],['(3)','個',[12]],['(4)','個',[100]]],ex:'公倍数＝12の倍数：12個\n150−(37＋25−12)＝100個（ベン図で整理）'},
+  {q:'100から400までの整数について。\n(1) 3の倍数は？　(2) 7の倍数は？　(3) 3の倍数でも7の倍数でもない数は？',f:[['(1)','個',[100]],['(2)','個',[43]],['(3)','個',[173]]],ex:'(1) 133−33＝100　(2) 57−14＝43\n(3) 21の倍数15個 → 301−(100＋43−15)＝173個'}]},
+ {g:'② □の倍数をつくる', p:[
+  {q:'37□の□に数字をひとつ入れて3けたの整数をつくります。\n(1) 5の倍数になる□は？　(2) 2の倍数になる□は？（すべて）',f:[['(1)','',[0,5]],['(2)','',[0,2,4,6,8],1]],ex:'一の位で判定'},
+  {q:'452□の□に数字をひとつ入れて、4けたの4の倍数をつくります。□をすべて答えなさい。',f:[['答え','',[0,4,8]]],ex:'下2けた「2□」が4の倍数→20,24,28'},
+  {q:'285□の□に数字をひとつ入れます。\n(1) 3の倍数になる□は？　(2) 9の倍数になる□は？　(3) 6の倍数になる□は？（すべて）',f:[['(1)','',[0,3,6,9]],['(2)','',[3]],['(3)','',[0,6]]],ex:'各位の和15＋□で判定。6の倍数＝偶数かつ3の倍数'},
+  {q:'63□72の□に数字をひとつ入れて、5けたの12の倍数をつくります。□をすべて答えなさい。',f:[['答え','',[0,3,6,9]]],ex:'下2けた72は常に4の倍数。18＋□が3の倍数→0,3,6,9'}]},
+ {g:'③ すきまなく並べる・はり合わせ', p:[
+  {q:'たて8cm・横12cmの長方形の紙を同じ向きにすきまなく並べて正方形を作ります。\n(1) いちばん小さい正方形には何枚必要？　(2) 2番目に小さい正方形の一辺は？',f:[['(1)','枚',[6]],['(2)','cm',[48]]],ex:'LCM＝24 → 3×2＝6枚。2番目は24×2＝48cm'},
+  {q:'たて6cm・横15cm・高さ10cmの直方体を積んで、なるべく小さい立方体を作ります。\n(1) 立方体の一辺は？　(2) 直方体は何個必要？',fig:()=>F.box('15cm','6cm','10cm'),f:[['(1)','cm',[30]],['(2)','個',[30]]],ex:'LCM＝30 → 5×2×3＝30個'},
+  {q:'たて11cm・横26cmの紙を、どこも1cmずつ重ねてはり合わせ、なるべく小さい正方形を作ります。\n(1) 正方形の一辺は？　(2) 紙は何枚必要？',fig:()=>F.overlap('26cm','11cm','1cm重ねる'),f:[['(1)','cm',[51]],['(2)','枚',[10]]],ex:'たて「10の倍数＋1」横「25の倍数＋1」→LCM50＋1＝51cm\nたて5枚×横2枚＝10枚'},
+  {q:'たて6cm・横10cmのタイルを、どこも2cmずつすきまをあけてはり、なるべく小さい正方形を作ります（一辺は両はしのタイルの外側から外側まで）。\n(1) 正方形の一辺は？　(2) タイルは何枚必要？',fig:()=>F.gaptile('10cm','6cm','すきま2cm'),f:[['(1)','cm',[22]],['(2)','枚',[6]]],ex:'たて「8の倍数−2」横「12の倍数−2」→LCM24−2＝22cm\n3×2＝6枚'}]},
+ {g:'④ □で割る・同時に発車・ランプ', p:[
+  {q:'(1) 4で割っても6で割っても1あまる2けたの整数を小さい順に3つ。\n(2) 5で割ると3あまり、7で割ると4あまる整数を小さい順に3つ。\n(3) 8で割ると5あまり、6で割ると3あまる整数のうち300に最も近い数。',f:[['(1)','',[13,25,37]],['(2)','',[18,53,88]],['(3)','',[309]]],ex:'(1) 12の倍数＋1\n(2) はじめは18、あとは35ずつ増える\n(3) 21＋24×□ → 285と309では309'},
+  {q:'(1) 10で割っても15で割っても7あまる3けたの整数を小さい順に3つ。\n(2) 6で割ると5あまり、9で割ると8あまる整数を小さい順に3つ。\n(3) 7で割ると2あまり、11で割ると9あまる整数のうち400に最も近い数。',f:[['(1)','',[127,157,187]],['(2)','',[17,35,53]],['(3)','',[394]]],ex:'(1) 30の倍数＋7\n(2) どちらも不足1 → 18の倍数−1\n(3) 9＋77×□ → 394'},
+  {q:'A町行きは8分ごと、B町行きは12分ごと、C町行きは20分ごとに発車します。午前8時に同時に発車しました。\n(1) 次に同時に発車するのは午前何時？（ちょうど）\n(2) 午前8時から午後6時までに同時に発車するのは何回？',f:[['(1) 午前','時',[10]],['(2)','回',[6]]],ex:'LCM＝120分＝2時間 → 午前10時\n600÷120＝5 → 最初の1回も含めて6回'},
+  {q:'Aは2秒ついて4秒消え、Bは3秒ついて6秒消え、Cは1秒ついて11秒消えます。3つが同時に点灯しました。\n(1) 次に同時に点灯するのは何秒後？\n(2) 5分の間に同時に点灯するのは最初も含めて何回？',f:[['(1)','秒後',[36]],['(2)','回',[9]]],ex:'周期6・9・12秒 → LCM36秒\n300÷36＝8あまり12 → 8＋1＝9回'},
+  {q:'Aは5秒ついて1秒消え、Bは3秒ついて5秒消えます。同時に点灯してから4分の間に、2つともついている時間は何秒間？',f:[['答え','秒間',[80]]],ex:'24秒周期で8秒間重なる → 240÷24＝10周期 → 80秒間'},
+  {q:'Aは4秒ついて2秒消え、Bは5秒ついて3秒消えます。同時に点灯してから6分の間に、2つともついている時間は何秒間？',f:[['答え','秒間',[150]]],ex:'24秒周期で10秒間重なる → 15周期 → 150秒間'},
+  {q:'50から250までの整数について。\n(1) 6の倍数は何個？　(2) 6の倍数でも8の倍数でもない数は何個？',f:[['(1)','個',[33]],['(2)','個',[151]]],ex:'(1) 41−8＝33個\n(2) 8の倍数25個、24の倍数8個 → 201−(33＋25−8)＝151個'}]}
+],
+test:{min:30,p:[
+  {q:'次の各組の最小公倍数を求めなさい。\n(1) (6, 15)　(2) (14, 35)　(3) (12, 19)　(4) (24, 40, 60)',pt:20,f:[['(1)','',[30]],['(2)','',[70]],['(3)','',[228]],['(4)','',[120]]],ex:'30／70／228／120'},
+  {q:'1から250までの整数について。\n(1) 6の倍数は？　(2) 9の倍数は？　(3) 6と9の公倍数は？　(4) どちらの倍数でもない数は？',pt:20,f:[['(1)','個',[41]],['(2)','個',[27]],['(3)','個',[13]],['(4)','個',[195]]],ex:'公倍数＝18の倍数13個。250−(41＋27−13)＝195個'},
+  {q:'471□の□に数字をひとつ入れます。\n(1) 5の倍数になる□は？　(2) 3の倍数になる□は？　(3) 4の倍数になる□は？（すべて）',pt:15,f:[['(1)','',[0,5]],['(2)','',[0,3,6,9]],['(3)','',[2,6]]],ex:'(3) 下2けた「1□」が4の倍数→12,16'},
+  {q:'たて10cm・横14cmの長方形の紙をすきまなく並べて、いちばん小さい正方形を作ります。\n(1) 正方形の一辺は？　(2) 紙は何枚必要？',pt:10,f:[['(1)','cm',[70]],['(2)','枚',[35]]],ex:'LCM＝70 → 7×5＝35枚'},
+  {q:'(1) 6で割っても9で割っても4あまる2けたの整数を小さい順に3つ。\n(2) 5で割ると2あまり、8で割ると5あまる整数のうち200に最も近い数。',pt:15,f:[['(1)','',[22,40,58]],['(2)','',[197]]],ex:'(1) 18の倍数＋4\n(2) 不足3 → 40の倍数−3 → 197'},
+  {q:'A町行きは10分ごと、B町行きは15分ごと、C町行きは25分ごとに発車します。午前9時に同時に発車しました。\n(1) 次に同時に発車するのは午前何時何分？\n(2) 午前9時から午後5時までに同時に発車するのは何回？',pt:10,f:[['(1) 午前','時',[11]],['','分',[30]],['(2)','回',[4]]],ex:'LCM＝150分 → 午前11時30分\n480÷150＝3あまり30 → 4回'},
+  {q:'Aは3秒ついて2秒消え、Bは4秒ついて4秒消えます。同時に点灯してから2分の間に、2つともついている時間は何秒間？',pt:10,f:[['答え','秒間',[36]]],ex:'40秒周期で12秒間重なる → 3周期 → 36秒間'}]}
+}];
+
+/* ---------- study log (localStorage) ---------- */
+function loadLog(){try{return JSON.parse(localStorage.getItem('drillLog'))||{t:[],p:{}};}catch(e){return {t:[],p:{}};}}
+function saveLog(L){localStorage.setItem('drillLog',JSON.stringify(L));}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const mdd=s=>(+s.slice(5,7))+'/'+(+s.slice(8,10));
+function logPractice(code,pid,ok){
+  const L=loadLog(),d=today();
+  const day=L.p[d]||(L.p[d]={});
+  const e=day[code]||(day[code]={a:[],c:[]});
+  if(!e.a.includes(pid))e.a.push(pid);
+  const ci=e.c.indexOf(pid);
+  if(ok&&ci<0)e.c.push(pid); if(!ok&&ci>=0)e.c.splice(ci,1);
+  saveLog(L);
+}
+let recIdx=null;
+function logTest(code,score){
+  const L=loadLog();
+  if(recIdx!==null&&L.t[recIdx]&&L.t[recIdx].u===code){L.t[recIdx].s=score;L.t[recIdx].d=today();}
+  else{L.t.push({d:today(),u:code,s:score});recIdx=L.t.length-1;}
+  saveLog(L);
+}
+function spark(scores){
+  if(!scores.length)return '';
+  const w=Math.max(40,scores.length*18),h=34;
+  const X=i=>scores.length===1?w/2:6+i*(w-12)/(scores.length-1);
+  const Y=s=>h-5-(s/100)*(h-10);
+  let g=`<line x1="0" y1="${Y(100)}" x2="${w}" y2="${Y(100)}" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 3"/>`;
+  if(scores.length>1)g+=`<polyline points="${scores.map((s,i)=>X(i)+','+Y(s)).join(' ')}" fill="none" stroke="var(--ai)" stroke-width="1.6"/>`;
+  scores.forEach((s,i)=>{g+=`<circle cx="${X(i)}" cy="${Y(s)}" r="${i===scores.length-1?3.4:2.2}" fill="${i===scores.length-1?'var(--shu)':'var(--ai)'}"/>`});
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="得点の推移"></svg>`.replace('></svg>','>'+g+'</svg>');
+}
+const uname=code=>{const u=U.find(x=>x.code===code);return u?u.name:code;};
+
+/* ---------- rendering ---------- */
+const V=document.getElementById('view'), HOME=document.getElementById('home');
+let timerId=null;
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function stopTimer(){if(timerId){clearInterval(timerId);timerId=null;}}
+HOME.onclick=()=>{stopTimer();home();};
+
+function home(){
+  HOME.hidden=true;
+  let h=U.map((u,i)=>{
+    const np=u.practice.reduce((a,g)=>a+g.p.length,0);
+    const best=localStorage.getItem('best'+u.code);
+    return `<div class="ucard"><span class="ucode">${u.code}</span>
+      <span class="utitle">${u.name}</span>
+      <span class="ubtns">
+        <button class="go" onclick="practice(${i})">練習（${np}問）</button>
+        <button class="go test" onclick="test(${i})">模擬テスト${best?`（最高 ${best}点）`:''}</button>
+      </span></div>`;
+  }).join('');
+  const L=loadLog();
+  const days=Object.keys(L.p).length, nt=L.t.length;
+  h+=`<div class="ucard"><span class="ucode">きろく</span>
+    <span class="utitle">学習記録</span>
+    <span style="font-size:12.5px;color:var(--sub)">練習した日 ${days}日　テスト ${nt}回</span>
+    <span class="ubtns"><button class="go" onclick="records()">記録を見る</button></span></div>`;
+  V.innerHTML=h;
+}
+
+function records(){
+  stopTimer();HOME.hidden=false;
+  const L=loadLog();
+  let h='<h2 style="margin:4px 0 14px">学習記録</h2>';
+  /* --- test scores --- */
+  h+='<div class="gtitle">模擬テストの成績</div>';
+  if(!L.t.length){h+='<p class="empty">まだテストの記録がありません。「採点する」を押すと自動で記録されます。</p>';}
+  else{
+    h+='<div class="trend">'+U.map(u=>{
+      const sc=L.t.filter(t=>t.u===u.code).map(t=>t.s);
+      return sc.length?`<span class="tu"><span class="chip">${u.name}</span>${spark(sc)}<b style="color:var(--shu);font-family:Georgia,serif">${Math.max(...sc)}</b><span style="color:var(--sub);font-size:11px">最高</span></span>`:'';
+    }).join('')+'</div>';
+    const rows=[...L.t].reverse().map(t=>
+      `<tr><td style="font-variant-numeric:tabular-nums">${mdd(t.d)}</td><td><span class="chip">${uname(t.u)}</span></td><td class="scr">${t.s}<span style="font-size:12px;color:var(--sub)"> /100</span></td></tr>`).join('');
+    h+=`<table class="rectbl"><tr><th>日付</th><th>単元</th><th>点数</th></tr>${rows}</table>`;
+  }
+  /* --- practice days --- */
+  h+='<div class="gtitle" style="margin-top:34px">練習した日</div>';
+  const days=Object.keys(L.p).sort().reverse();
+  if(!days.length){h+='<p class="empty">まだ練習の記録がありません。練習問題で「答え合わせ」を押すと自動で記録されます。</p>';}
+  else{
+    h+=days.map(d=>{
+      const us=Object.entries(L.p[d]).map(([code,e])=>
+        `<span class="u">${uname(code)}　<b>${e.c.length}</b>問正解 / ${e.a.length}問</span>`).join('');
+      return `<div class="dayrow"><span class="d">${mdd(d)}</span>${us}</div>`;
+    }).join('');
+  }
+  h+='<p style="margin-top:26px"><button class="mini" onclick="clearLog()">記録をすべて消す</button></p>';
+  V.innerHTML=h;window.scrollTo(0,0);
+}
+function clearLog(){
+  if(!confirm('学習記録（練習の記録・テストの成績・最高点）をすべて消します。よろしいですか？'))return;
+  localStorage.removeItem('drillLog');
+  U.forEach(u=>localStorage.removeItem('best'+u.code));
+  records();
+}
+
+function fieldHTML(uid,pid,fid,f){
+  const wide=f[3];
+  return `<label class="fld">${f[0]?esc(f[0]):''}<input id="in-${uid}-${pid}-${fid}" class="${wide?'wide':''}" inputmode="text" autocomplete="off">${f[1]}</label>`;
+}
+function probHTML(uid,pid,p,num,showPt){
+  const fig=p.fig?p.fig():'';
+  return `<div class="prob" id="pb-${uid}-${pid}">
+    <div class="pq"><div class="qt"><span class="qn">${num}</span>　${esc(p.q)}${showPt&&p.pt?`<span class="pt">（${p.pt}点）</span>`:''}</div>${fig}</div>
+    <div class="fields">${p.f.map((f,fi)=>fieldHTML(uid,pid,fi,f)).join('')}</div>
+    <div class="actions"><button class="chk" onclick="grade('${uid}',${pid})">答え合わせ</button><span class="mark" id="mk-${uid}-${pid}"></span></div>
+    <details class="ex" id="ex-${uid}-${pid}" hidden><summary>解説を見る</summary>
+      <div class="body"><span class="ansv">答え：${p.f.map(f=>(f[0]?f[0]+' ':'')+fmtAns(f[2])+(f[1]||'')).join('　')}</span>\n${esc(p.ex||'')}</div></details>
+  </div>`;
+}
+let FLAT={};
+function grade(uid,pid){
+  const p=FLAT[uid][pid];
+  let ok=true;
+  p.f.forEach((f,fi)=>{const el=document.getElementById(`in-${uid}-${pid}-${fi}`);
+    const good=checkField(el.value,f[2]); if(!good)ok=false;
+    el.style.borderBottomColor=good?'var(--shu)':'var(--ai)';});
+  const mk=document.getElementById(`mk-${uid}-${pid}`);
+  mk.textContent=ok?'○':'×'; mk.className='mark '+(ok?'ok':'ng');
+  document.getElementById(`ex-${uid}-${pid}`).hidden=false;
+  p._ok=ok;
+  const pr=document.getElementById('prg');
+  if(pr){const all=Object.values(FLAT[uid]);pr.innerHTML=`正解 <b>${all.filter(x=>x._ok).length}</b> ／ ${all.length}問`;}
+  if(uid[0]==='p')logPractice(U[+uid.slice(1)].code,pid,ok);
+  if(uid[0]==='t')updateScore(uid);
+  return ok;
+}
+function practice(i){
+  stopTimer();HOME.hidden=false;
+  const u=U[i],uid='p'+i;FLAT[uid]={};let n=0;
+  let h=`<h2 style="margin:4px 0 2px">${u.code}　${u.name}　<span style="font-size:14px;color:var(--sub)">類似問題（練習）</span></h2><p class="prog" id="prg">正解 <b>0</b> ／ ${u.practice.reduce((a,g)=>a+g.p.length,0)}問</p>`;
+  u.practice.forEach(g=>{
+    h+=`<div class="gtitle">${g.g}</div><p class="gnote">1問ずつ「答え合わせ」を押すと○×と解説が出ます</p>`;
+    g.p.forEach(p=>{FLAT[uid][n]=p;p._ok=false;h+=probHTML(uid,n,p,'問'+(n+1));n++;});
+  });
+  V.innerHTML=h;window.scrollTo(0,0);
+}
+function updateScore(uid){
+  const i=+uid.slice(1),u=U[i];
+  const got=u.test.p.reduce((a,p)=>a+(p._ok?p.pt:0),0);
+  const el=document.getElementById('score');if(el)el.innerHTML=`得点 <b>${got}</b> / 100`;
+  return got;
+}
+function test(i){
+  stopTimer();HOME.hidden=false;
+  const u=U[i],uid='t'+i;FLAT[uid]={};
+  let h=`<div class="bar"><span class="tmr" id="tmr">${u.test.min}:00</span>
+    <span class="sc" id="score">得点 <b>–</b> / 100</span><span style="flex:1"></span>
+    <button class="submit" onclick="submitTest(${i})">採点する</button></div>
+    <h2 style="margin:4px 0 14px">${u.code}　${u.name}　模擬テスト <span style="font-size:13px;color:var(--sub)">（${u.test.min}分・100点満点）</span></h2>`;
+  u.test.p.forEach((p,n)=>{FLAT[uid][n]=p;p._ok=false;h+=probHTML(uid,n,p,'大問'+(n+1),true);});
+  recIdx=null;
+  h+=`<div id="res"></div>`;
+  V.innerHTML=h;window.scrollTo(0,0);
+  let sec=u.test.min*60;const t=document.getElementById('tmr');
+  timerId=setInterval(()=>{sec--;if(sec<0){t.textContent='時間切れ';t.classList.add('low');stopTimer();return;}
+    t.textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+    if(sec<300)t.classList.add('low');},1000);
+}
+function submitTest(i){
+  const uid='t'+i,u=U[i];
+  u.test.p.forEach((p,n)=>grade(uid,n));
+  const got=updateScore(uid);
+  stopTimer();
+  const best=Math.max(got,+(localStorage.getItem('best'+u.code)||0));
+  localStorage.setItem('best'+u.code,best);
+  logTest(u.code,got);
+  document.getElementById('res').innerHTML=`<div class="resultbox">
+    <div class="lbl">${u.code} ${u.name}　模擬テスト</div>
+    <div class="big">${got}<span style="font-size:20px;color:var(--sub)"> / 100点</span></div>
+    <div class="lbl">これまでの最高点：${best}点　（成績は「学習記録」に保存しました）</div></div>`;
+  document.getElementById('res').scrollIntoView({behavior:'smooth'});
+}
+home();
+</script>
+
+</body>
+</html>
