@@ -162,6 +162,17 @@ a.prt,a.prt2{text-decoration:none;display:inline-flex;align-items:center;gap:2px
 a.prt{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:5px 10px;color:var(--ink);background:var(--card)}
 a.prt:hover{border-color:var(--ai);color:var(--ai)}
 a.prt2{font-size:12.5px;border:1.5px solid var(--ai);border-radius:8px;padding:6px 12px;color:var(--ai);background:var(--card)}
+/* plan table */
+.plan{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.prow{display:flex;gap:12px;align-items:baseline;padding:8px 14px;border-bottom:1px solid var(--line);font-size:13.5px}
+.prow:last-child{border-bottom:none}
+.prow .pd{min-width:74px;font-variant-numeric:tabular-nums;font-weight:600}
+.prow .pd i{font-style:normal;font-size:11px;color:var(--sub)}
+.prow .pc{flex:1;display:flex;gap:6px;flex-wrap:wrap}
+.prow.ppast{opacity:.6}
+.prow.ptoday{background:var(--shu-soft)}
+.prow.ptoday .pd{color:var(--shu)}
+.chip.ok{border-color:var(--shu);color:var(--shu)}
 footer{color:var(--sub);font-size:11.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:10px}
 @media (max-width:560px){ .fg{width:170px} header.app h1{font-size:22px} }
 @media (prefers-reduced-motion: no-preference){
@@ -1097,7 +1108,7 @@ test:{min:30,p:[
 ];
 
 /* ---------- study log (localStorage) ---------- */
-function loadLog(){try{const L=JSON.parse(localStorage.getItem('drillLog'))||{};return {t:L.t||[],p:L.p||{},w:L.w||{},r:L.r||{}};}catch(e){return {t:[],p:{},w:{},r:{}};}}
+function loadLog(){try{const L=JSON.parse(localStorage.getItem('drillLog'))||{};return {t:L.t||[],p:L.p||{},w:L.w||{},r:L.r||{},plan:L.plan||null};}catch(e){return {t:[],p:{},w:{},r:{},plan:null};}}
 function saveLog(L){localStorage.setItem('drillLog',JSON.stringify(L));}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const mdd=s=>(+s.slice(5,7))+'/'+(+s.slice(8,10));
@@ -1164,6 +1175,21 @@ const wrongOf=code=>{const L=loadLog();return (L.w[code]||[]).length;};
 function activitySet(){const L=loadLog();const s=new Set(Object.keys(L.p));L.t.forEach(t=>s.add(t.d));return s;}
 function streak(){const s=activitySet();let n=0,d=today();if(!s.has(d))d=addDays(d,-1);
   while(s.has(d)){n++;d=addDays(d,-1);}return n;}
+/* ---- 2週間の学習計画 ---- */
+const PLAN_DAYS=[
+ ['D510-03','D510-04'],['D510-06','D510-05'],['D510-02'],['D510-07'],['D510-08'],
+ ['D510-09'],['D510-16','D510-17'],['D510-18'],['D510-24'],['D510-28'],
+ [],[],[],[]];
+const PLAN_LABELS={10:'再テスト・復習の日',11:'再テスト・復習の日',12:'再テスト・復習の日',13:'総仕上げ！全単元クリア確認'};
+const PLANNED_PCT=[11,22,27,32,38,43,54,59,65,70,80,88,95,100];
+function ensurePlan(){const L=loadLog();if(!L.plan){L.plan={start:today()};saveLog(L);return L.plan;}return L.plan;}
+function dayNum(ds){return new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8,10)).getTime()/86400000;}
+function planDayIndex(){const p=ensurePlan();
+  return Math.min(13,Math.max(0,Math.round(dayNum(today())-dayNum(p.start))));}
+function unitProg(code){return {none:0,prac:40,tested:70,clear:100}[statusOf(code)];}
+function progressPct(){return Math.round(U.reduce((a,u)=>a+unitProg(u.code),0)/U.length);}
+function resetPlan(){if(!confirm('計画を「今日から2週間」で作り直しますか？'))return;
+  const L=loadLog();L.plan={start:today()};saveLog(L);dash();}
 
 /* ---------- rendering ---------- */
 const V=document.getElementById('view'), HOME=document.getElementById('home');
@@ -1177,7 +1203,7 @@ function home(){
   const clearedN=U.filter(u=>bestOf(u.code)>=90).length;
   let h=`<div class="ucard"><span class="ucode">目標</span>
     <span class="utitle">進捗ダッシュボード</span>
-    <span style="font-size:12.5px;color:var(--sub)">90点クリア <b style="color:var(--shu);font-family:Georgia,serif;font-size:17px">${clearedN}</b> / ${U.length}単元　・連続学習 ${streak()}日</span>
+    <span style="font-size:12.5px;color:var(--sub)">進捗率 <b style="color:var(--shu);font-family:Georgia,serif;font-size:17px">${progressPct()}%</b>　・クリア ${clearedN}/${U.length}単元　・連続 ${streak()}日</span>
     <span class="ubtns"><button class="go test" onclick="dash()">ひらく</button></span></div>`;
   h+=U.map((u,i)=>{
     const np=u.practice.reduce((a,g)=>a+g.p.length,0);
@@ -1250,9 +1276,15 @@ function dash(){
   const cleared=U.filter(u=>statusOf(u.code)==='clear').length;
   const pct=Math.round(cleared/U.length*100);
   let h='<h2 style="margin:4px 0 10px">進捗ダッシュボード</h2>';
+  const di=planDayIndex(), prog=progressPct(), plnd=PLANNED_PCT[di], diff=prog-plnd;
   h+=`<div class="bigbar"><div class="lbl">目標：全単元で模擬テスト90点以上</div>
     <div class="num"><b>${cleared}</b> / ${U.length} 単元クリア</div>
-    <div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`;
+    <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+    <div class="lbl" style="margin-top:12px">進捗率（計画 ${di+1}日目 / 14日）</div>
+    <div class="num" style="font-size:20px"><b style="font-size:30px">${prog}%</b>
+      <span style="font-size:13px;color:var(--sub)">　予定 ${plnd}%　${diff>=0?`<b style="font-size:15px;color:var(--shu)">＋${diff}%</b> 先行中👍`:`<b style="font-size:15px;color:var(--ai)">${diff}%</b> ばんかい しよう`}</span></div>
+    <div class="track" style="position:relative"><div class="fill" style="width:${prog}%"></div>
+      <div style="position:absolute;top:-2px;bottom:-2px;left:${plnd}%;width:2px;background:var(--ai)" title="予定ライン"></div></div></div>`;
   /* 手入力（プリント学習用） */
   h+=`<div class="entry"><div class="et">✍️ きょうの記録を入力（プリントで解いたぶん）</div>
     <div class="row">単元
@@ -1272,14 +1304,24 @@ function dash(){
   U.forEach((u,i)=>{const due=L.r[u.code];
     if(due&&due<=td&&statusOf(u.code)!=='clear')
       todos.push({i,u,kind:'retest',done:doneTest[u.code]!==undefined});});
-  if(todos.length<2){
-    for(let i=0;i<U.length;i++){const u=U[i],st=statusOf(u.code);
-      if(st==='clear'||st==='tested')continue;
-      if(todos.some(t=>t.i===i))continue;
-      todos.push({i,u,kind:'study',done:!!donePrac[u.code]&&doneTest[u.code]!==undefined});
-      if(HEAVY.includes(u.code)||todos.length>=2)break;
-    }
+  /* 計画：今日までに予定されている単元でまだテストしていないもの */
+  const schedCodes=[];
+  for(let k=0;k<=Math.min(di,9);k++)PLAN_DAYS[k].forEach(c=>schedCodes.push(c));
+  schedCodes.forEach(c=>{
+    const i=U.findIndex(u=>u.code===c);if(i<0)return;
+    const st=statusOf(c);
+    if((st==='none'||st==='prac')&&!todos.some(t=>t.i===i))
+      todos.push({i,u:U[i],kind:'study',done:!!donePrac[c]&&doneTest[c]!==undefined});
+  });
+  /* 後半のバッファ日：残っている単元をうめる */
+  if(di>=10){
+    U.forEach((u,i)=>{
+      if(todos.length>=3)return;
+      if(statusOf(u.code)!=='clear'&&!todos.some(t=>t.i===i))
+        todos.push({i,u,kind:'retest',done:doneTest[u.code]!==undefined});
+    });
   }
+  if(todos.length>3)todos.length=3;
   h+=`<div class="gtitle">今日やること　<span style="font-weight:normal;font-size:12.5px;color:var(--sub)">連続学習 ${streak()}日</span></div>`;
   if(!todos.length)h+='<p class="empty">全単元クリアずみ！すばらしい🎉　仕上げに復習モードでかためよう。</p>';
   todos.forEach(t=>{
@@ -1293,6 +1335,29 @@ function dash(){
       <button class="go test" onclick="test(${t.i})">テスト</button></div>`;
   });
   /* 単元カード */
+  /* 2週間の予定表 */
+  const pl=ensurePlan();
+  const youbi=['日','月','火','水','木','金','土'];
+  h+=`<div class="gtitle" style="margin-top:28px">📅 2週間の計画（${mdd(pl.start)}〜${mdd(addDays(pl.start,13))}）　<button class="mini" onclick="resetPlan()">今日から作り直す</button></div>`;
+  h+='<div class="plan">';
+  for(let k=0;k<14;k++){
+    const ds=addDays(pl.start,k);
+    const dt=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8,10));
+    const codes=PLAN_DAYS[k];
+    let content;
+    if(codes.length){
+      content=codes.map(c=>{const st=statusOf(c);
+        const ic=st==='clear'?'⭐':(st==='tested'?'△':(st==='prac'?'✏️':''));
+        return `<span class="chip ${st==='clear'?'ok':''}">${ic}${uname(c)}</span>`;}).join(' ');
+    }else{
+      const rem=U.filter(u=>statusOf(u.code)!=='clear').length;
+      content=`<span style="color:var(--sub)">${PLAN_LABELS[k]||'再テスト・復習の日'}${k<13?`（残り${rem}単元）`:''}</span>`;
+    }
+    h+=`<div class="prow ${ds===td?'ptoday':''} ${ds<td?'ppast':''}">
+      <span class="pd">${mdd(ds)}<i>(${youbi[dt.getDay()]})</i></span>
+      <span class="pc">${content}</span></div>`;
+  }
+  h+='</div><p style="font-size:11.5px;color:var(--sub);margin:6px 0 0">⭐＝90点クリア　△＝テスト済（90点未満）　✏️＝練習中</p>';
   h+=`<div class="gtitle" style="margin-top:28px">単元べつの状況　<a class="prt" style="font-weight:normal" href="https://drive.google.com/drive/folders/1Dx1wk2gOrPLmR5IwIi3TlGLs_OvcFvvw" target="_blank" rel="noopener">📁 プリント一覧（Drive）</a></div><div class="ugrid">`;
   U.forEach((u,i)=>{
     const st=statusOf(u.code),b=bestOf(u.code),w=wrongOf(u.code),due=L.r[u.code];
