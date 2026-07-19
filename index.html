@@ -1138,7 +1138,7 @@ function spark(scores){
   scores.forEach((s,i)=>{g+=`<circle cx="${X(i)}" cy="${Y(s)}" r="${i===scores.length-1?3.4:2.2}" fill="${i===scores.length-1?'var(--shu)':'var(--ai)'}"/>`});
   return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="得点の推移"></svg>`.replace('></svg>','>'+g+'</svg>');
 }
-const uname=code=>{const u=U.find(x=>x.code===code);return u?u.name:code;};
+const uname=code=>{if(code==='FINAL')return '総仕上げ試験';const u=U.find(x=>x.code===code);return u?u.name:code;};
 function addDays(ds,n){const d=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8,10)+n);
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const bestOf=code=>+(localStorage.getItem('best'+code)||0);
@@ -1190,6 +1190,56 @@ function unitProg(code){return {none:0,prac:40,tested:70,clear:100}[statusOf(cod
 function progressPct(){return Math.round(U.reduce((a,u)=>a+unitProg(u.code),0)/U.length);}
 function resetPlan(){if(!confirm('計画を「今日から2週間」で作り直しますか？'))return;
   const L=loadLog();L.plan={start:today()};saveLog(L);dash();}
+/* ---- 関門方式（順番にクリアで解放） ---- */
+const ORDER=PLAN_DAYS.flat();
+function isUnlocked(code){
+  const k=ORDER.indexOf(code);if(k<0)return true;
+  for(let j=0;j<k;j++){if(bestOf(ORDER[j])<90)return false;}
+  return true;}
+function finalUnlocked(){return ORDER.every(c=>bestOf(c)>=90);}
+/* ---- 総仕上げ試験（全単元から20問・各5点） ---- */
+const FINAL_PICKS=[
+ ['D510-03',6],['D510-04',0],['D510-04',17],['D510-06',11],['D510-05',6],
+ ['D510-02',7],['D510-02',17],['D510-07',3],['D510-07',15],['D510-08',7],
+ ['D510-09',4],['D510-09',11],['D510-16',9],['D510-17',1],['D510-17',12],
+ ['D510-18',7],['D510-18',10],['D510-24',2],['D510-24',13],['D510-28',2]];
+function finalProblems(){
+  return FINAL_PICKS.map(([c,qi])=>{
+    const u=U.find(x=>x.code===c);
+    const p=Object.create(u.test.p[qi]);
+    p.pt=5;p._ok=false;return p;});}
+function finalTest(){
+  stopTimer();HOME.hidden=false;
+  if(!finalUnlocked()){alert('🔒 全13単元の模擬テストで90点以上を取るとちょうせんできます');return;}
+  const uid='F';FLAT[uid]={};
+  const probs=finalProblems();
+  let h=`<div class="bar"><span class="tmr" id="tmr">40:00</span>
+    <span class="sc" id="score">得点 <b>–</b> / 100</span><span style="flex:1"></span>
+    <button class="submit" onclick="submitFinal()">採点する</button></div>
+    <h2 style="margin:4px 0 14px">🏆 総仕上げ試験　<span style="font-size:13px;color:var(--sub)">（全13単元・40分・100点満点）</span></h2>`;
+  probs.forEach((p,n)=>{FLAT[uid][n]=p;h+=probHTML(uid,n,p,'問'+(n+1),true);});
+  h+='<div id="res"></div>';
+  V.innerHTML=h;window.scrollTo(0,0);
+  let sec=40*60;const t=document.getElementById('tmr');
+  timerId=setInterval(()=>{sec--;if(sec<0){t.textContent='時間切れ';t.classList.add('low');stopTimer();return;}
+    t.textContent=Math.floor(sec/60)+':'+String(sec%60).padStart(2,'0');
+    if(sec<300)t.classList.add('low');},1000);
+}
+function submitFinal(){
+  const uid='F';const probs=Object.values(FLAT[uid]);
+  probs.forEach((p,n)=>grade(uid,n));
+  const got=probs.reduce((a,p)=>a+(p._ok?p.pt:0),0);
+  stopTimer();
+  const el=document.getElementById('score');if(el)el.innerHTML=`得点 <b>${got}</b> / 100`;
+  const best=Math.max(got,+(localStorage.getItem('bestFINAL')||0));
+  localStorage.setItem('bestFINAL',best);
+  const L=loadLog();L.t.push({d:today(),u:'FINAL',s:got});saveLog(L);
+  document.getElementById('res').innerHTML=`<div class="resultbox">
+    <div class="lbl">🏆 総仕上げ試験（全13単元）</div>
+    <div class="big">${got}<span style="font-size:20px;color:var(--sub)"> / 100点</span></div>
+    <div class="lbl">${got>=90?'🎉 D510ぜんぶ 完全クリア！おめでとう！！':'90点以上で完全クリア。まちがえた単元を復習して、もう一度ちょうせん！'}</div></div>`;
+  document.getElementById('res').scrollIntoView({behavior:'smooth'});
+}
 
 /* ---------- rendering ---------- */
 const V=document.getElementById('view'), HOME=document.getElementById('home');
@@ -1208,14 +1258,20 @@ function home(){
   h+=U.map((u,i)=>{
     const np=u.practice.reduce((a,g)=>a+g.p.length,0);
     const best=localStorage.getItem('best'+u.code);
-    return `<div class="ucard"><span class="ucode">${u.code}</span>
-      <span class="utitle">${u.name}</span>
-      <span class="ubtns">
-        ${pdfBtns(u.code)}
+    const lk=!isUnlocked(u.code);
+    const btns=lk?'<span style="font-size:12px;color:var(--sub)">🔒 前の単元の模擬テストで90点以上を取ると かいほう</span>'
+      :`${pdfBtns(u.code)}
         <button class="go" onclick="practice(${i})">練習（${np}問）</button>
-        <button class="go test" onclick="test(${i})">模擬テスト${best?`（最高 ${best}点）`:''}</button>
-      </span></div>`;
+        <button class="go test" onclick="test(${i})">模擬テスト${best?`（最高 ${best}点）`:''}</button>`;
+    return `<div class="ucard" style="${lk?'opacity:.6':''}"><span class="ucode">${u.code}</span>
+      <span class="utitle">${u.name}${(+best>=90)?'　⭐':''}</span>
+      <span class="ubtns">${btns}</span></div>`;
   }).join('');
+  const fbest=+(localStorage.getItem('bestFINAL')||0),fun=finalUnlocked();
+  h+=`<div class="ucard" style="${fun?'border:1.5px solid var(--shu)':'opacity:.75'}">
+    <span class="ucode">最終</span><span class="utitle">🏆 総仕上げ試験（全単元）</span>
+    <span style="font-size:12.5px;color:var(--sub)">${fun?(fbest?`最高 ${fbest}点${fbest>=90?'　🎉完全クリア！':''}`:'20問・40分・100点満点'):'🔒 全13単元をクリアすると かいほう'}</span>
+    <span class="ubtns">${fun?'<button class="go test" onclick="finalTest()">開始</button>':''}</span></div>`;
   const L=loadLog();
   const days=Object.keys(L.p).length, nt=L.t.length;
   h+=`<div class="ucard"><span class="ucode">きろく</span>
@@ -1231,6 +1287,7 @@ function entryScore(){
   const i=+document.getElementById('ent-u').value;
   const s=Math.round(+document.getElementById('ent-score').value);
   if(isNaN(s)||s<0||s>100){entMsg='点数は0〜100で入力してください';dash();return;}
+  if(!isUnlocked(U[i].code)){entMsg='🔒 まだかいほうされていない単元です';dash();return;}
   const d=entDate(),code=U[i].code;
   const L=loadLog();
   L.t.push({d,u:code,s});
@@ -1247,6 +1304,7 @@ function entryPrac(){
   let c=document.getElementById('ent-c').value;
   c=(c==='')?n:Math.round(+c);
   if(isNaN(n)||n<=0){entMsg='解いた問題数を入力してください';dash();return;}
+  if(!isUnlocked(U[i].code)){entMsg='🔒 まだかいほうされていない単元です';dash();return;}
   if(isNaN(c)||c<0||c>n)c=n;
   const d=entDate(),code=U[i].code;
   const L=loadLog();
@@ -1288,7 +1346,7 @@ function dash(){
   /* 手入力（プリント学習用） */
   h+=`<div class="entry"><div class="et">✍️ きょうの記録を入力（プリントで解いたぶん）</div>
     <div class="row">単元
-      <select id="ent-u">${U.map((u,i)=>`<option value="${i}">${u.code.slice(5)}　${u.name}</option>`).join('')}</select>
+      <select id="ent-u">${U.map((u,i)=>({u,i})).filter(x=>isUnlocked(x.u.code)).map(x=>`<option value="${x.i}">${x.u.code.slice(5)}　${x.u.name}</option>`).join('')}</select>
       日付 <input type="date" id="ent-d" value="${td}"></div>
     <div class="row">📝 模擬テスト：<input id="ent-score" inputmode="numeric" placeholder="点数">点
       <button class="go test" onclick="entryScore()">登録</button></div>
@@ -1304,27 +1362,28 @@ function dash(){
   U.forEach((u,i)=>{const due=L.r[u.code];
     if(due&&due<=td&&statusOf(u.code)!=='clear')
       todos.push({i,u,kind:'retest',done:doneTest[u.code]!==undefined});});
-  /* 計画：今日までに予定されている単元でまだテストしていないもの */
-  const schedCodes=[];
-  for(let k=0;k<=Math.min(di,9);k++)PLAN_DAYS[k].forEach(c=>schedCodes.push(c));
-  schedCodes.forEach(c=>{
-    const i=U.findIndex(u=>u.code===c);if(i<0)return;
-    const st=statusOf(c);
-    if((st==='none'||st==='prac')&&!todos.some(t=>t.i===i))
-      todos.push({i,u:U[i],kind:'study',done:!!donePrac[c]&&doneTest[c]!==undefined});
-  });
-  /* 後半のバッファ日：残っている単元をうめる */
-  if(di>=10){
-    U.forEach((u,i)=>{
-      if(todos.length>=3)return;
-      if(statusOf(u.code)!=='clear'&&!todos.some(t=>t.i===i))
-        todos.push({i,u,kind:'retest',done:doneTest[u.code]!==undefined});
-    });
+  /* 関門方式：いま挑戦中（＝最初にクリアしていない）単元がメインタスク */
+  const fidx=ORDER.findIndex(c=>bestOf(c)<90);
+  if(fidx>=0){
+    const c=ORDER[fidx],i=U.findIndex(u=>u.code===c);
+    if(i>=0&&!todos.some(t=>t.i===i)){
+      const st=statusOf(c);
+      todos.push({i,u:U[i],kind:st==='tested'?'retest':'study',
+        done:!!donePrac[c]&&doneTest[c]!==undefined});
+    }
+  }else{
+    todos.push({final:true,done:+(localStorage.getItem('bestFINAL')||0)>=90});
   }
   if(todos.length>3)todos.length=3;
   h+=`<div class="gtitle">今日やること　<span style="font-weight:normal;font-size:12.5px;color:var(--sub)">連続学習 ${streak()}日</span></div>`;
   if(!todos.length)h+='<p class="empty">全単元クリアずみ！すばらしい🎉　仕上げに復習モードでかためよう。</p>';
   todos.forEach(t=>{
+    if(t.final){
+      h+=`<div class="todo ${t.done?'done':''}"><span class="mk2">${t.done?'✔':'🏆'}</span>
+        <span style="flex:1;min-width:180px">総仕上げ試験（全13単元・40分）にちょうせん！</span>
+        <button class="go test" onclick="finalTest()">開始</button></div>`;
+      return;
+    }
     const label=t.kind==='retest'
       ?`再テスト：${t.u.name}（これまでの最高 ${bestOf(t.u.code)}点）`
       :`${t.u.name}　の練習＋模擬テスト`;
@@ -1361,19 +1420,28 @@ function dash(){
   h+=`<div class="gtitle" style="margin-top:28px">単元べつの状況　<a class="prt" style="font-weight:normal" href="https://drive.google.com/drive/folders/1Dx1wk2gOrPLmR5IwIi3TlGLs_OvcFvvw" target="_blank" rel="noopener">📁 プリント一覧（Drive）</a></div><div class="ugrid">`;
   U.forEach((u,i)=>{
     const st=statusOf(u.code),b=bestOf(u.code),w=wrongOf(u.code),due=L.r[u.code];
-    const chip={clear:'<span class="st clear">⭐ クリア</span>',
+    const lk=!isUnlocked(u.code);
+    const chip=lk?'<span class="st none">🔒 ロック中</span>':{clear:'<span class="st clear">⭐ クリア</span>',
       tested:'<span class="st tested">テスト済</span>',
       prac:'<span class="st prac">練習中</span>',
       none:'<span class="st none">未着手</span>'}[st];
-    h+=`<div class="ucell"><div class="uc-top"><span class="ucode">${u.code.slice(5)}</span> ${chip}</div>
-      <div class="uc-name">${u.name}</div>
-      <div class="uc-meta">${b?`最高 <b>${b}</b>点`:'記録なし'}${(due&&st!=='clear')?`　<span style="color:var(--shu)">再テスト ${mdd(due)}</span>`:''}</div>
-      <div class="uc-btns">${pdfBtns(u.code,1)}
+    const btns=lk?'<span style="font-size:11.5px;color:var(--sub)">前の単元をクリアで かいほう</span>'
+      :`${pdfBtns(u.code,1)}
       <button class="mini" onclick="practice(${i})">練習</button>
       <button class="mini" onclick="test(${i})">テスト</button>
-      ${w?`<button class="mini rev" onclick="review(${i})">復習(${w})</button>`:''}</div></div>`;
+      ${w?`<button class="mini rev" onclick="review(${i})">復習(${w})</button>`:''}`;
+    h+=`<div class="ucell" style="${lk?'opacity:.62':''}"><div class="uc-top"><span class="ucode">${u.code.slice(5)}</span> ${chip}</div>
+      <div class="uc-name">${u.name}</div>
+      <div class="uc-meta">${b?`最高 <b>${b}</b>点`:'記録なし'}${(due&&st!=='clear')?`　<span style="color:var(--shu)">再テスト ${mdd(due)}</span>`:''}</div>
+      <div class="uc-btns">${btns}</div></div>`;
   });
   h+='</div>';
+  /* 総仕上げ試験カード */
+  const fbest=+(localStorage.getItem('bestFINAL')||0),fun=finalUnlocked();
+  h+=`<div class="ucard" style="margin-top:12px;${fun?'border:1.5px solid var(--shu)':''}">
+    <span class="ucode">最終</span><span class="utitle">🏆 総仕上げ試験（全単元）</span>
+    <span style="font-size:12.5px;color:var(--sub)">${fun?(fbest?`最高 <b style="color:var(--shu)">${fbest}</b>点${fbest>=90?'　🎉完全クリア！':''}`:'ちょうせんできます！ 20問・40分'):'🔒 全13単元をクリアすると かいほう'}</span>
+    <span class="ubtns">${fun?'<button class="go test" onclick="finalTest()">開始</button>':''}</span></div>`;
   h+='<div class="gtitle" style="margin-top:28px">がんばりカレンダー</div>'+calHTML();
   V.innerHTML=h;window.scrollTo(0,0);
 }
@@ -1490,6 +1558,7 @@ function grade(uid,pid){
 }
 function practice(i){
   stopTimer();HOME.hidden=false;
+  if(!isUnlocked(U[i].code)){alert('🔒 前の単元の模擬テストで90点以上を取ると かいほうされます');home();return;}
   const u=U[i],uid='p'+i;FLAT[uid]={};let n=0;
   let h=`<h2 style="margin:4px 0 2px">${u.code}　${u.name}　<span style="font-size:14px;color:var(--sub)">類似問題（練習）</span></h2><p class="prog" id="prg">正解 <b>0</b> ／ ${u.practice.reduce((a,g)=>a+g.p.length,0)}問</p>`;
   u.practice.forEach(g=>{
@@ -1506,6 +1575,7 @@ function updateScore(uid){
 }
 function test(i){
   stopTimer();HOME.hidden=false;
+  if(!isUnlocked(U[i].code)){alert('🔒 前の単元の模擬テストで90点以上を取ると かいほうされます');home();return;}
   const u=U[i],uid='t'+i;FLAT[uid]={};
   let h=`<div class="bar"><span class="tmr" id="tmr">${u.test.min}:00</span>
     <span class="sc" id="score">得点 <b>–</b> / 100</span><span style="flex:1"></span>
