@@ -1191,12 +1191,14 @@ function progressPct(){return Math.round(U.reduce((a,u)=>a+unitProg(u.code),0)/U
 function resetPlan(){if(!confirm('計画を「今日から2週間」で作り直しますか？'))return;
   const L=loadLog();L.plan={start:today()};saveLog(L);dash();}
 /* ---- 関門方式（順番にクリアで解放） ---- */
+const GATING=false; /* true にするとロック復活（90点で次を解放） */
 const ORDER=PLAN_DAYS.flat();
 function isUnlocked(code){
+  if(!GATING)return true;
   const k=ORDER.indexOf(code);if(k<0)return true;
   for(let j=0;j<k;j++){if(bestOf(ORDER[j])<90)return false;}
   return true;}
-function finalUnlocked(){return ORDER.every(c=>bestOf(c)>=90);}
+function finalUnlocked(){if(!GATING)return true;return ORDER.every(c=>bestOf(c)>=90);}
 /* ---- 総仕上げ試験（全単元から20問・各5点） ---- */
 const FINAL_PICKS=[
  ['D510-03',6],['D510-04',0],['D510-04',17],['D510-06',11],['D510-05',6],
