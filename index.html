@@ -158,6 +158,10 @@ button.mini.rev{color:var(--shu);border-color:var(--shu)}
 .entmsg{color:var(--shu);font-size:13px;margin:6px 0 0;font-weight:600}
 .delx{background:none;border:none;color:var(--sub);cursor:pointer;font-size:14px;padding:2px 6px}
 .delx:hover{color:var(--shu)}
+a.prt,a.prt2{text-decoration:none;display:inline-flex;align-items:center;gap:2px}
+a.prt{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:5px 10px;color:var(--ink);background:var(--card)}
+a.prt:hover{border-color:var(--ai);color:var(--ai)}
+a.prt2{font-size:12.5px;border:1.5px solid var(--ai);border-radius:8px;padding:6px 12px;color:var(--ai);background:var(--card)}
 footer{color:var(--sub);font-size:11.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:10px}
 @media (max-width:560px){ .fg{width:170px} header.app h1{font-size:22px} }
 @media (prefers-reduced-motion: no-preference){
@@ -1128,6 +1132,29 @@ function addDays(ds,n){const d=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slic
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const bestOf=code=>+(localStorage.getItem('best'+code)||0);
 const HEAVY=['D510-09','D510-18','D510-24','D510-28'];
+/* Driveにアップ済みのPDF (p:類似問題集, t:模擬テスト) */
+const PDFS={
+ 'D510-02':{p:'1M9YSOGwhm-VSHzkTF0VjjWfudWa3COra',t:'1RhyU9Dz9QRBFV5jdihKwI183nvaied7X'},
+ 'D510-03':{p:'1v6rFh4J_icrl5-HNzJZBP_3IhpDXGDH6',t:'1hCTGIsU2RBd4q_0DF0lj9YSvTosUvrOW'},
+ 'D510-04':{p:'1jIoROONDbObDuEPPa_poo1YNbY2uDUOe',t:'1VBQ7gEQVXMF6I-pQiyyF4rhIBVahMweW'},
+ 'D510-05':{p:'13KWomVaRQacLxcqrNxUzKmhm9Rii49gU',t:'16SIg78ReDCE28YU2kOqvAsU7ovzGeoHn'},
+ 'D510-06':{p:'1z8Eau45JbSoe5c9V4v4boCeQNRVS606C',t:'13tEa-2FGd_RsHnSk1k7IhwY0jJNJYPEB'},
+ 'D510-07':{p:'1r_V4XaSqKJf5ePpyhgnKdaVuPIWpCzfU',t:'1nXjH-c2GZIrem2VUgTLA7i7VClyoaX55'},
+ 'D510-08':{p:'1DxUBnPk9B4sDCHbQbmsWvrhadq4f1-nI',t:'1a7lhRjTWVjxDRy_JCtYqEurscql7TaM4'},
+ 'D510-09':{p:'1PZk9qRuSPWck_PAX2D_kr7D0z0HATr4n',t:'1-DlLL-lnBI0lRHKQPM1Zf0-VQ2G18-3n'},
+ 'D510-16':{p:'1iPmhL2m5-vt8O-1x22SNg3KnwNzTnGqc',t:'1DZ9x2D43bFx8TuebXlo8qWj7nS2U4Qg9'},
+ 'D510-17':{p:'1FzXl9XtjvfUsqkOGEs8AMxpXr7rYJ9UL',t:'1HTRJ7xLhrnETwmHXP-v-3DEffvY9mTcT'},
+ 'D510-18':{p:'1sVeN8jxPkgABp5_BP5BxO6JRKuMfSHyI',t:'1O_gGEiN1Bo8A9GLFpzJBjokaPkSQgxLA'},
+ 'D510-24':{p:'12RE-cBTsy_ExzcjXyAxWT2Wm7FdWb1fi',t:'19T5khTsgTbVvK-2uc04exZIO3fSzOWlj'},
+ 'D510-28':{p:'1BbjEZkQubM4akQiOxL95lMuzCAefLU6A',t:'1U6yLQYj2AuaIviEtI3lRgoBAuKsfyZvW'}
+};
+const pdfUrl=id=>'https://drive.google.com/file/d/'+id+'/view';
+function pdfBtns(code,small){
+  const d=PDFS[code]; if(!d)return '';
+  const cls=small?'mini prt':'go prt2';
+  return `<a class="${cls}" href="${pdfUrl(d.p)}" target="_blank" rel="noopener">🖨 問題</a>`+
+         `<a class="${cls}" href="${pdfUrl(d.t)}" target="_blank" rel="noopener">🖨 テスト</a>`;
+}
 function statusOf(code){const L=loadLog();
   if(bestOf(code)>=90)return 'clear';
   if(L.t.some(t=>t.u===code))return 'tested';
@@ -1260,11 +1287,12 @@ function dash(){
       :`${t.u.name}　の練習＋模擬テスト`;
     h+=`<div class="todo ${t.done?'done':''}"><span class="mk2">${t.done?'✔':'□'}</span>
       <span style="flex:1;min-width:180px">${label}</span>
+      ${pdfBtns(t.u.code)}
       <button class="go" onclick="practice(${t.i})">練習</button>
       <button class="go test" onclick="test(${t.i})">テスト</button></div>`;
   });
   /* 単元カード */
-  h+='<div class="gtitle" style="margin-top:28px">単元べつの状況</div><div class="ugrid">';
+  h+=`<div class="gtitle" style="margin-top:28px">単元べつの状況　<a class="prt" style="font-weight:normal" href="https://drive.google.com/drive/folders/1Dx1wk2gOrPLmR5IwIi3TlGLs_OvcFvvw" target="_blank" rel="noopener">📁 プリント一覧（Drive）</a></div><div class="ugrid">`;
   U.forEach((u,i)=>{
     const st=statusOf(u.code),b=bestOf(u.code),w=wrongOf(u.code),due=L.r[u.code];
     const chip={clear:'<span class="st clear">⭐ クリア</span>',
@@ -1274,7 +1302,8 @@ function dash(){
     h+=`<div class="ucell"><div class="uc-top"><span class="ucode">${u.code.slice(5)}</span> ${chip}</div>
       <div class="uc-name">${u.name}</div>
       <div class="uc-meta">${b?`最高 <b>${b}</b>点`:'記録なし'}${(due&&st!=='clear')?`　<span style="color:var(--shu)">再テスト ${mdd(due)}</span>`:''}</div>
-      <div class="uc-btns"><button class="mini" onclick="practice(${i})">練習</button>
+      <div class="uc-btns">${pdfBtns(u.code,1)}
+      <button class="mini" onclick="practice(${i})">練習</button>
       <button class="mini" onclick="test(${i})">テスト</button>
       ${w?`<button class="mini rev" onclick="review(${i})">復習(${w})</button>`:''}</div></div>`;
   });
