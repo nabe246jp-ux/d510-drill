@@ -146,6 +146,18 @@ button.mini.rev{color:var(--shu);border-color:var(--shu)}
 .cal-grid .cd.on{background:var(--shu-soft);color:var(--shu);font-weight:700}
 .cal-grid .cd.now{outline:1.6px solid var(--ai)}
 .cal-grid .cd i{position:absolute;font-size:8px;right:3px;top:1px;font-style:normal}
+/* manual entry */
+.entry{background:var(--card);border:1.5px solid var(--ai);border-radius:12px;padding:14px 18px;margin:14px 0}
+.entry .et{font-size:13px;font-weight:700;color:var(--ai);letter-spacing:.08em;margin-bottom:8px}
+.entry .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;font-size:13.5px}
+.entry select,.entry input{font-family:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:7px;background:var(--paper);color:var(--ink)}
+.entry input{width:64px;text-align:center}
+.entry input[type=date]{width:150px}
+.entry button.go{padding:6px 14px;font-size:13px}
+.entmsg{color:var(--shu);font-size:13px;margin:6px 0 0;font-weight:600}
+.delx{background:none;border:none;color:var(--sub);cursor:pointer;font-size:14px;padding:2px 6px}
+.delx:hover{color:var(--shu)}
 footer{color:var(--sub);font-size:11.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:10px}
 @media (max-width:560px){ .fg{width:170px} header.app h1{font-size:22px} }
 @media (prefers-reduced-motion: no-preference){
@@ -1159,6 +1171,51 @@ function home(){
   V.innerHTML=h;
 }
 
+let entMsg='';
+function entDate(){const el=document.getElementById('ent-d');return (el&&el.value)?el.value:today();}
+function entryScore(){
+  const i=+document.getElementById('ent-u').value;
+  const s=Math.round(+document.getElementById('ent-score').value);
+  if(isNaN(s)||s<0||s>100){entMsg='点数は0〜100で入力してください';dash();return;}
+  const d=entDate(),code=U[i].code;
+  const L=loadLog();
+  L.t.push({d,u:code,s});
+  const best=Math.max(s,bestOf(code));
+  localStorage.setItem('best'+code,best);
+  if(best>=90)delete L.r[code]; else L.r[code]=addDays(d,2);
+  saveLog(L);
+  entMsg=`${U[i].name}のテスト ${s}点 を記録しました`+(s>=90?'　⭐クリア！':`　→ ${mdd(addDays(d,2))}に再テスト予定`);
+  dash();
+}
+function entryPrac(){
+  const i=+document.getElementById('ent-u').value;
+  const n=Math.round(+document.getElementById('ent-n').value);
+  let c=document.getElementById('ent-c').value;
+  c=(c==='')?n:Math.round(+c);
+  if(isNaN(n)||n<=0){entMsg='解いた問題数を入力してください';dash();return;}
+  if(isNaN(c)||c<0||c>n)c=n;
+  const d=entDate(),code=U[i].code;
+  const L=loadLog();
+  const day=L.p[d]||(L.p[d]={});
+  const e=day[code]||(day[code]={a:[],c:[]});
+  e.pn=(e.pn||0)+n; e.pc=(e.pc||0)+c;
+  saveLog(L);
+  entMsg=`${U[i].name}の練習 ${n}問（正解${c}問）を記録しました`;
+  dash();
+}
+function delTest(idx){
+  if(!confirm('この成績を削除しますか？'))return;
+  const L=loadLog();
+  const code=L.t[idx]&&L.t[idx].u;
+  L.t.splice(idx,1);
+  if(code){
+    const rest=L.t.filter(t=>t.u===code).map(t=>t.s);
+    if(rest.length)localStorage.setItem('best'+code,Math.max(...rest));
+    else localStorage.removeItem('best'+code);
+  }
+  saveLog(L);
+  records();
+}
 function dash(){
   stopTimer();HOME.hidden=false;
   const L=loadLog(),td=today();
@@ -1168,6 +1225,17 @@ function dash(){
   h+=`<div class="bigbar"><div class="lbl">目標：全単元で模擬テスト90点以上</div>
     <div class="num"><b>${cleared}</b> / ${U.length} 単元クリア</div>
     <div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`;
+  /* 手入力（プリント学習用） */
+  h+=`<div class="entry"><div class="et">✍️ きょうの記録を入力（プリントで解いたぶん）</div>
+    <div class="row">単元
+      <select id="ent-u">${U.map((u,i)=>`<option value="${i}">${u.code.slice(5)}　${u.name}</option>`).join('')}</select>
+      日付 <input type="date" id="ent-d" value="${td}"></div>
+    <div class="row">📝 模擬テスト：<input id="ent-score" inputmode="numeric" placeholder="点数">点
+      <button class="go test" onclick="entryScore()">登録</button></div>
+    <div class="row">✏️ 練習：解いた <input id="ent-n" inputmode="numeric">問 ／ 正解 <input id="ent-c" inputmode="numeric" placeholder="省略可">問
+      <button class="go" onclick="entryPrac()">登録</button></div>
+    ${entMsg?`<div class="entmsg">✔ ${entMsg}</div>`:''}</div>`;
+  entMsg='';
   /* 今日やること */
   const doneTest={},donePrac={};
   L.t.forEach(t=>{if(t.d===td&&(doneTest[t.u]===undefined||t.s>doneTest[t.u]))doneTest[t.u]=t.s;});
@@ -1257,9 +1325,9 @@ function records(){
       const sc=L.t.filter(t=>t.u===u.code).map(t=>t.s);
       return sc.length?`<span class="tu"><span class="chip">${u.name}</span>${spark(sc)}<b style="color:var(--shu);font-family:Georgia,serif">${Math.max(...sc)}</b><span style="color:var(--sub);font-size:11px">最高</span></span>`:'';
     }).join('')+'</div>';
-    const rows=[...L.t].reverse().map(t=>
-      `<tr><td style="font-variant-numeric:tabular-nums">${mdd(t.d)}</td><td><span class="chip">${uname(t.u)}</span></td><td class="scr">${t.s}<span style="font-size:12px;color:var(--sub)"> /100</span></td></tr>`).join('');
-    h+=`<table class="rectbl"><tr><th>日付</th><th>単元</th><th>点数</th></tr>${rows}</table>`;
+    const rows=L.t.map((t,ix)=>({t,ix})).reverse().map(({t,ix})=>
+      `<tr><td style="font-variant-numeric:tabular-nums">${mdd(t.d)}</td><td><span class="chip">${uname(t.u)}</span></td><td class="scr">${t.s}<span style="font-size:12px;color:var(--sub)"> /100</span></td><td><button class="delx" onclick="delTest(${ix})" title="削除">✕</button></td></tr>`).join('');
+    h+=`<table class="rectbl"><tr><th>日付</th><th>単元</th><th>点数</th><th></th></tr>${rows}</table>`;
   }
   /* --- practice days --- */
   h+='<div class="gtitle" style="margin-top:34px">練習した日</div>';
@@ -1267,8 +1335,9 @@ function records(){
   if(!days.length){h+='<p class="empty">まだ練習の記録がありません。練習問題で「答え合わせ」を押すと自動で記録されます。</p>';}
   else{
     h+=days.map(d=>{
-      const us=Object.entries(L.p[d]).map(([code,e])=>
-        `<span class="u">${uname(code)}　<b>${e.c.length}</b>問正解 / ${e.a.length}問</span>`).join('');
+      const us=Object.entries(L.p[d]).map(([code,e])=>{
+        const ta=e.a.length+(e.pn||0), tc=e.c.length+(e.pc||0);
+        return `<span class="u">${uname(code)}　<b>${tc}</b>問正解 / ${ta}問</span>`;}).join('');
       return `<div class="dayrow"><span class="d">${mdd(d)}</span>${us}</div>`;
     }).join('');
   }
