@@ -113,6 +113,39 @@ button.mini{font-family:inherit;font-size:12px;cursor:pointer;border-radius:6px;
 button.mini:hover{color:var(--shu);border-color:var(--shu)}
 .empty{color:var(--sub);font-size:13.5px;background:var(--card);border:1px dashed var(--line);
   border-radius:10px;padding:16px;text-align:center}
+/* dashboard */
+.bigbar{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:8px}
+.bigbar .lbl{font-size:12px;color:var(--sub);letter-spacing:.15em}
+.bigbar .num{font-family:Georgia,serif;font-size:26px;margin:2px 0 8px}
+.bigbar .num b{color:var(--shu);font-size:38px}
+.track{height:12px;background:var(--ai-soft);border-radius:8px;overflow:hidden}
+.fill{height:100%;background:var(--shu);border-radius:8px}
+.todo{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:14px;flex-wrap:wrap}
+.todo.done{opacity:.55}
+.todo .mk2{font-size:18px;color:var(--shu)}
+.todo button.go{padding:6px 12px;font-size:12.5px}
+.ugrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.ucell{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.uc-top{display:flex;justify-content:space-between;align-items:center}
+.uc-name{font-size:14.5px;font-weight:600;margin:6px 0 2px}
+.uc-meta{font-size:12px;color:var(--sub);min-height:18px}
+.uc-meta b{color:var(--shu);font-size:15px;font-family:Georgia,serif}
+.uc-btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.st{font-size:11px;border-radius:12px;padding:1px 9px}
+.st.clear{background:var(--shu-soft);color:var(--shu);font-weight:700}
+.st.tested{background:var(--ai-soft);color:var(--ai)}
+.st.prac{border:1px solid var(--line);color:var(--sub)}
+.st.none{color:var(--sub);opacity:.6}
+button.mini.rev{color:var(--shu);border-color:var(--shu)}
+.cal{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;max-width:430px}
+.cal-head{font-size:13px;color:var(--sub);margin-bottom:6px;letter-spacing:.1em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:12px}
+.cal-grid .cw{color:var(--sub);font-size:10.5px}
+.cal-grid .cd{position:relative;padding:6px 0;border-radius:8px;font-variant-numeric:tabular-nums}
+.cal-grid .cd.on{background:var(--shu-soft);color:var(--shu);font-weight:700}
+.cal-grid .cd.now{outline:1.6px solid var(--ai)}
+.cal-grid .cd i{position:absolute;font-size:8px;right:3px;top:1px;font-style:normal}
 footer{color:var(--sub);font-size:11.5px;margin-top:40px;border-top:1px solid var(--line);padding-top:10px}
 @media (max-width:560px){ .fg{width:170px} header.app h1{font-size:22px} }
 @media (prefers-reduced-motion: no-preference){
@@ -1048,7 +1081,7 @@ test:{min:30,p:[
 ];
 
 /* ---------- study log (localStorage) ---------- */
-function loadLog(){try{return JSON.parse(localStorage.getItem('drillLog'))||{t:[],p:{}};}catch(e){return {t:[],p:{}};}}
+function loadLog(){try{const L=JSON.parse(localStorage.getItem('drillLog'))||{};return {t:L.t||[],p:L.p||{},w:L.w||{},r:L.r||{}};}catch(e){return {t:[],p:{},w:{},r:{}};}}
 function saveLog(L){localStorage.setItem('drillLog',JSON.stringify(L));}
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 const mdd=s=>(+s.slice(5,7))+'/'+(+s.slice(8,10));
@@ -1079,6 +1112,19 @@ function spark(scores){
   return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="得点の推移"></svg>`.replace('></svg>','>'+g+'</svg>');
 }
 const uname=code=>{const u=U.find(x=>x.code===code);return u?u.name:code;};
+function addDays(ds,n){const d=new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8,10)+n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const bestOf=code=>+(localStorage.getItem('best'+code)||0);
+const HEAVY=['D510-09','D510-18','D510-24','D510-28'];
+function statusOf(code){const L=loadLog();
+  if(bestOf(code)>=90)return 'clear';
+  if(L.t.some(t=>t.u===code))return 'tested';
+  for(const d in L.p){if(L.p[d][code])return 'prac';}
+  return 'none';}
+const wrongOf=code=>{const L=loadLog();return (L.w[code]||[]).length;};
+function activitySet(){const L=loadLog();const s=new Set(Object.keys(L.p));L.t.forEach(t=>s.add(t.d));return s;}
+function streak(){const s=activitySet();let n=0,d=today();if(!s.has(d))d=addDays(d,-1);
+  while(s.has(d)){n++;d=addDays(d,-1);}return n;}
 
 /* ---------- rendering ---------- */
 const V=document.getElementById('view'), HOME=document.getElementById('home');
@@ -1089,7 +1135,12 @@ HOME.onclick=()=>{stopTimer();home();};
 
 function home(){
   HOME.hidden=true;
-  let h=U.map((u,i)=>{
+  const clearedN=U.filter(u=>bestOf(u.code)>=90).length;
+  let h=`<div class="ucard"><span class="ucode">目標</span>
+    <span class="utitle">進捗ダッシュボード</span>
+    <span style="font-size:12.5px;color:var(--sub)">90点クリア <b style="color:var(--shu);font-family:Georgia,serif;font-size:17px">${clearedN}</b> / ${U.length}単元　・連続学習 ${streak()}日</span>
+    <span class="ubtns"><button class="go test" onclick="dash()">ひらく</button></span></div>`;
+  h+=U.map((u,i)=>{
     const np=u.practice.reduce((a,g)=>a+g.p.length,0);
     const best=localStorage.getItem('best'+u.code);
     return `<div class="ucard"><span class="ucode">${u.code}</span>
@@ -1108,6 +1159,92 @@ function home(){
   V.innerHTML=h;
 }
 
+function dash(){
+  stopTimer();HOME.hidden=false;
+  const L=loadLog(),td=today();
+  const cleared=U.filter(u=>statusOf(u.code)==='clear').length;
+  const pct=Math.round(cleared/U.length*100);
+  let h='<h2 style="margin:4px 0 10px">進捗ダッシュボード</h2>';
+  h+=`<div class="bigbar"><div class="lbl">目標：全単元で模擬テスト90点以上</div>
+    <div class="num"><b>${cleared}</b> / ${U.length} 単元クリア</div>
+    <div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`;
+  /* 今日やること */
+  const doneTest={},donePrac={};
+  L.t.forEach(t=>{if(t.d===td&&(doneTest[t.u]===undefined||t.s>doneTest[t.u]))doneTest[t.u]=t.s;});
+  if(L.p[td])Object.keys(L.p[td]).forEach(c=>donePrac[c]=1);
+  const todos=[];
+  U.forEach((u,i)=>{const due=L.r[u.code];
+    if(due&&due<=td&&statusOf(u.code)!=='clear')
+      todos.push({i,u,kind:'retest',done:doneTest[u.code]!==undefined});});
+  if(todos.length<2){
+    for(let i=0;i<U.length;i++){const u=U[i],st=statusOf(u.code);
+      if(st==='clear'||st==='tested')continue;
+      if(todos.some(t=>t.i===i))continue;
+      todos.push({i,u,kind:'study',done:!!donePrac[u.code]&&doneTest[u.code]!==undefined});
+      if(HEAVY.includes(u.code)||todos.length>=2)break;
+    }
+  }
+  h+=`<div class="gtitle">今日やること　<span style="font-weight:normal;font-size:12.5px;color:var(--sub)">連続学習 ${streak()}日</span></div>`;
+  if(!todos.length)h+='<p class="empty">全単元クリアずみ！すばらしい🎉　仕上げに復習モードでかためよう。</p>';
+  todos.forEach(t=>{
+    const label=t.kind==='retest'
+      ?`再テスト：${t.u.name}（これまでの最高 ${bestOf(t.u.code)}点）`
+      :`${t.u.name}　の練習＋模擬テスト`;
+    h+=`<div class="todo ${t.done?'done':''}"><span class="mk2">${t.done?'✔':'□'}</span>
+      <span style="flex:1;min-width:180px">${label}</span>
+      <button class="go" onclick="practice(${t.i})">練習</button>
+      <button class="go test" onclick="test(${t.i})">テスト</button></div>`;
+  });
+  /* 単元カード */
+  h+='<div class="gtitle" style="margin-top:28px">単元べつの状況</div><div class="ugrid">';
+  U.forEach((u,i)=>{
+    const st=statusOf(u.code),b=bestOf(u.code),w=wrongOf(u.code),due=L.r[u.code];
+    const chip={clear:'<span class="st clear">⭐ クリア</span>',
+      tested:'<span class="st tested">テスト済</span>',
+      prac:'<span class="st prac">練習中</span>',
+      none:'<span class="st none">未着手</span>'}[st];
+    h+=`<div class="ucell"><div class="uc-top"><span class="ucode">${u.code.slice(5)}</span> ${chip}</div>
+      <div class="uc-name">${u.name}</div>
+      <div class="uc-meta">${b?`最高 <b>${b}</b>点`:'記録なし'}${(due&&st!=='clear')?`　<span style="color:var(--shu)">再テスト ${mdd(due)}</span>`:''}</div>
+      <div class="uc-btns"><button class="mini" onclick="practice(${i})">練習</button>
+      <button class="mini" onclick="test(${i})">テスト</button>
+      ${w?`<button class="mini rev" onclick="review(${i})">復習(${w})</button>`:''}</div></div>`;
+  });
+  h+='</div>';
+  h+='<div class="gtitle" style="margin-top:28px">がんばりカレンダー</div>'+calHTML();
+  V.innerHTML=h;window.scrollTo(0,0);
+}
+function calHTML(){
+  const s=activitySet();const now=new Date();const y=now.getFullYear(),m=now.getMonth();
+  const first=new Date(y,m,1).getDay();const days=new Date(y,m+1,0).getDate();
+  const td=today();
+  let h=`<div class="cal"><div class="cal-head">${y}年${m+1}月</div><div class="cal-grid">`;
+  ['日','月','火','水','木','金','土'].forEach(w=>h+=`<span class="cw">${w}</span>`);
+  for(let i=0;i<first;i++)h+='<span></span>';
+  for(let d=1;d<=days;d++){
+    const ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    h+=`<span class="cd ${s.has(ds)?'on':''} ${ds===td?'now':''}">${d}${s.has(ds)?'<i>✓</i>':''}</span>`;
+  }
+  return h+'</div></div>';
+}
+function review(i){
+  stopTimer();HOME.hidden=false;
+  const u=U[i],uid='r'+i,L=loadLog();
+  const wids=(L.w[u.code]||[]).slice();
+  const flatP=[];u.practice.forEach(g=>g.p.forEach(p=>flatP.push(p)));
+  FLAT[uid]={};
+  let h=`<h2 style="margin:4px 0 2px">${u.code}　${u.name}　<span style="font-size:14px;color:var(--shu)">復習モード</span></h2>
+    <p class="gnote">前に間違えた問題だけを集めました。正解すると復習リストから消えます。</p>`;
+  if(!wids.length){h+='<p class="empty">復習する問題はありません🎉</p>';V.innerHTML=h;window.scrollTo(0,0);return;}
+  wids.forEach((wid,n)=>{
+    const src=wid[0]==='p'?flatP[+wid.slice(1)]:u.test.p[+wid.slice(1)];
+    if(!src)return;
+    const p=Object.create(src);p._wid=wid;p._ok=false;
+    FLAT[uid][n]=p;
+    h+=probHTML(uid,n,p,'復'+(n+1));
+  });
+  V.innerHTML=h;window.scrollTo(0,0);
+}
 function records(){
   stopTimer();HOME.hidden=false;
   const L=loadLog();
@@ -1172,7 +1309,18 @@ function grade(uid,pid){
   p._ok=ok;
   const pr=document.getElementById('prg');
   if(pr){const all=Object.values(FLAT[uid]);pr.innerHTML=`正解 <b>${all.filter(x=>x._ok).length}</b> ／ ${all.length}問`;}
+  const ucode=U[+uid.slice(1)]?U[+uid.slice(1)].code:null;
+  if(ucode){
+    let wid=null;
+    if(uid[0]==='p')wid='p'+pid; else if(uid[0]==='t')wid='t'+pid; else if(uid[0]==='r')wid=p._wid;
+    if(wid){const L=loadLog();const w=L.w[ucode]||(L.w[ucode]=[]);
+      const ix=w.indexOf(wid);
+      if(!ok&&ix<0)w.push(wid);
+      if(ok&&ix>=0)w.splice(ix,1);
+      saveLog(L);}
+  }
   if(uid[0]==='p')logPractice(U[+uid.slice(1)].code,pid,ok);
+  if(uid[0]==='r'&&p._wid&&p._wid[0]==='p')logPractice(U[+uid.slice(1)].code,+p._wid.slice(1),ok);
   if(uid[0]==='t')updateScore(uid);
   return ok;
 }
@@ -1216,10 +1364,15 @@ function submitTest(i){
   const best=Math.max(got,+(localStorage.getItem('best'+u.code)||0));
   localStorage.setItem('best'+u.code,best);
   logTest(u.code,got);
+  {const L=loadLog();
+   if(got<90)L.r[u.code]=addDays(today(),2); else delete L.r[u.code];
+   saveLog(L);}
+  const nextMsg=got>=90?'⭐ 90点クリア！おめでとう！':`90点まであと${90-got}点　→ ${mdd(addDays(today(),2))} に再テストの予定を入れました`;
   document.getElementById('res').innerHTML=`<div class="resultbox">
     <div class="lbl">${u.code} ${u.name}　模擬テスト</div>
     <div class="big">${got}<span style="font-size:20px;color:var(--sub)"> / 100点</span></div>
-    <div class="lbl">これまでの最高点：${best}点　（成績は「学習記録」に保存しました）</div></div>`;
+    <div class="lbl">これまでの最高点：${best}点</div>
+    <div class="lbl" style="margin-top:6px">${nextMsg}</div></div>`;
   document.getElementById('res').scrollIntoView({behavior:'smooth'});
 }
 home();
