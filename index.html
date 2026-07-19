@@ -1185,6 +1185,7 @@ function home(){
     return `<div class="ucard"><span class="ucode">${u.code}</span>
       <span class="utitle">${u.name}</span>
       <span class="ubtns">
+        ${pdfBtns(u.code)}
         <button class="go" onclick="practice(${i})">練習（${np}問）</button>
         <button class="go test" onclick="test(${i})">模擬テスト${best?`（最高 ${best}点）`:''}</button>
       </span></div>`;
