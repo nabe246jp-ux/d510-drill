@@ -1177,11 +1177,11 @@ function streak(){const s=activitySet();let n=0,d=today();if(!s.has(d))d=addDays
   while(s.has(d)){n++;d=addDays(d,-1);}return n;}
 /* ---- 2週間の学習計画 ---- */
 const PLAN_DAYS=[
- ['D510-03','D510-04'],['D510-06','D510-05'],['D510-02'],['D510-07'],['D510-08'],
+ ['D510-02'],['D510-03','D510-04'],['D510-05','D510-06'],['D510-07'],['D510-08'],
  ['D510-09'],['D510-16','D510-17'],['D510-18'],['D510-24'],['D510-28'],
  [],[],[],[]];
 const PLAN_LABELS={10:'再テスト・復習の日',11:'再テスト・復習の日',12:'再テスト・復習の日',13:'総仕上げ！全単元クリア確認'};
-const PLANNED_PCT=[11,22,27,32,38,43,54,59,65,70,80,88,95,100];
+const PLANNED_PCT=[5,16,27,32,38,43,54,59,65,70,80,88,95,100];
 function ensurePlan(){const L=loadLog();if(!L.plan){L.plan={start:today()};saveLog(L);return L.plan;}return L.plan;}
 function dayNum(ds){return new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8,10)).getTime()/86400000;}
 function planDayIndex(){const p=ensurePlan();
