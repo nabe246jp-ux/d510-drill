@@ -1418,19 +1418,19 @@ const bestOf=code=>+(localStorage.getItem('best'+code)||0);
 const HEAVY=['D510-09','D510-18','D510-24','D510-28'];
 /* Driveにアップ済みのPDF (p:類似問題集, t:模擬テスト) */
 const PDFS={
- 'D510-02':{p:'1M9YSOGwhm-VSHzkTF0VjjWfudWa3COra',t:'1RhyU9Dz9QRBFV5jdihKwI183nvaied7X'},
- 'D510-03':{p:'1v6rFh4J_icrl5-HNzJZBP_3IhpDXGDH6',t:'1hCTGIsU2RBd4q_0DF0lj9YSvTosUvrOW'},
- 'D510-04':{p:'1jIoROONDbObDuEPPa_poo1YNbY2uDUOe',t:'1VBQ7gEQVXMF6I-pQiyyF4rhIBVahMweW'},
- 'D510-05':{p:'13KWomVaRQacLxcqrNxUzKmhm9Rii49gU',t:'16SIg78ReDCE28YU2kOqvAsU7ovzGeoHn'},
- 'D510-06':{p:'1z8Eau45JbSoe5c9V4v4boCeQNRVS606C',t:'13tEa-2FGd_RsHnSk1k7IhwY0jJNJYPEB'},
- 'D510-07':{p:'1r_V4XaSqKJf5ePpyhgnKdaVuPIWpCzfU',t:'1nXjH-c2GZIrem2VUgTLA7i7VClyoaX55'},
- 'D510-08':{p:'1DxUBnPk9B4sDCHbQbmsWvrhadq4f1-nI',t:'1a7lhRjTWVjxDRy_JCtYqEurscql7TaM4'},
- 'D510-09':{p:'1PZk9qRuSPWck_PAX2D_kr7D0z0HATr4n',t:'1-DlLL-lnBI0lRHKQPM1Zf0-VQ2G18-3n'},
- 'D510-16':{p:'1iPmhL2m5-vt8O-1x22SNg3KnwNzTnGqc',t:'1DZ9x2D43bFx8TuebXlo8qWj7nS2U4Qg9'},
- 'D510-17':{p:'1FzXl9XtjvfUsqkOGEs8AMxpXr7rYJ9UL',t:'1HTRJ7xLhrnETwmHXP-v-3DEffvY9mTcT'},
- 'D510-18':{p:'1sVeN8jxPkgABp5_BP5BxO6JRKuMfSHyI',t:'1O_gGEiN1Bo8A9GLFpzJBjokaPkSQgxLA'},
- 'D510-24':{p:'12RE-cBTsy_ExzcjXyAxWT2Wm7FdWb1fi',t:'19T5khTsgTbVvK-2uc04exZIO3fSzOWlj'},
- 'D510-28':{p:'1BbjEZkQubM4akQiOxL95lMuzCAefLU6A',t:'1U6yLQYj2AuaIviEtI3lRgoBAuKsfyZvW'}
+ 'D510-02':{p:'1M9YSOGwhm-VSHzkTF0VjjWfudWa3COra',t:'1RhyU9Dz9QRBFV5jdihKwI183nvaied7X',t2:'1vh7AQ8Hqb07HoxfzZXBqTrAR6ExKRJkf'},
+ 'D510-03':{p:'1v6rFh4J_icrl5-HNzJZBP_3IhpDXGDH6',t:'1hCTGIsU2RBd4q_0DF0lj9YSvTosUvrOW',t2:'13GQ7ZGyLo-EbOxxFoWsOer-ATiCOIW_k'},
+ 'D510-04':{p:'1jIoROONDbObDuEPPa_poo1YNbY2uDUOe',t:'1VBQ7gEQVXMF6I-pQiyyF4rhIBVahMweW',t2:'1vtj5UYtvKL0V0pGW3EJgNHZPZFL6MjAX'},
+ 'D510-05':{p:'13KWomVaRQacLxcqrNxUzKmhm9Rii49gU',t:'16SIg78ReDCE28YU2kOqvAsU7ovzGeoHn',t2:'1QWua4Nq102W8S5boxzwMGbYnh8DzhAKl'},
+ 'D510-06':{p:'1z8Eau45JbSoe5c9V4v4boCeQNRVS606C',t:'13tEa-2FGd_RsHnSk1k7IhwY0jJNJYPEB',t2:'1Zky8q6tCk3zJmScBRyib32KFOkmiFta6'},
+ 'D510-07':{p:'1r_V4XaSqKJf5ePpyhgnKdaVuPIWpCzfU',t:'1nXjH-c2GZIrem2VUgTLA7i7VClyoaX55',t2:'1pRBbpn-QhAmIIfB57R2fW3IIqcux2eUD'},
+ 'D510-08':{p:'1DxUBnPk9B4sDCHbQbmsWvrhadq4f1-nI',t:'1a7lhRjTWVjxDRy_JCtYqEurscql7TaM4',t2:'1-w3hq_k18Gp6QrGTxfn_lqIJDeZMFOI5'},
+ 'D510-09':{p:'1PZk9qRuSPWck_PAX2D_kr7D0z0HATr4n',t:'1-DlLL-lnBI0lRHKQPM1Zf0-VQ2G18-3n',t2:'1j11vr1YTfc9JUMpXW-PIz8A29HAkycNz'},
+ 'D510-16':{p:'1iPmhL2m5-vt8O-1x22SNg3KnwNzTnGqc',t:'1DZ9x2D43bFx8TuebXlo8qWj7nS2U4Qg9',t2:'1lprAr-hrjS90w9w23sO0sn-VGp-9_eeV'},
+ 'D510-17':{p:'1FzXl9XtjvfUsqkOGEs8AMxpXr7rYJ9UL',t:'1HTRJ7xLhrnETwmHXP-v-3DEffvY9mTcT',t2:'1D64BOVAQ-Tc8-EhAnJrPW1VOksxe13PS'},
+ 'D510-18':{p:'1sVeN8jxPkgABp5_BP5BxO6JRKuMfSHyI',t:'1O_gGEiN1Bo8A9GLFpzJBjokaPkSQgxLA',t2:'1jKMaDPPzwgVhdZLB35tr69sUAbzxjmIQ'},
+ 'D510-24':{p:'12RE-cBTsy_ExzcjXyAxWT2Wm7FdWb1fi',t:'19T5khTsgTbVvK-2uc04exZIO3fSzOWlj',t2:'1g0O4N2x7sVNH9u_TpP6nCGTj9Yu05YFn'},
+ 'D510-28':{p:'1BbjEZkQubM4akQiOxL95lMuzCAefLU6A',t:'1U6yLQYj2AuaIviEtI3lRgoBAuKsfyZvW',t2:'1iNtph_v-fyMVxDI2lALuRb5_QZYaAbJU'}
 };
 const pdfUrl=id=>'https://drive.google.com/file/d/'+id+'/view';
 function pdfBtns(code,small){
