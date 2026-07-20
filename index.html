@@ -1663,15 +1663,14 @@ function dash(){
       return;
     }
     const label=t.kind==='retest'
-      ?`再テスト：${t.u.name}（これまでの最高 ${bestOf(t.u.code)}点）→ テストBで再チャレンジ`
+      ?`再テスト：${t.u.name}（これまでの最高 ${bestOf(t.u.code)}点）`
       :`${t.u.name}　の練習＋模擬テスト`;
     h+=`<div class="todo ${t.done?'done':''}"><span class="mk2">${t.done?'✔':'□'}</span>
       <span style="flex:1;min-width:180px">${label}</span>
       ${pdfBtns(t.u.code)}
       <button class="go" onclick="practice(${t.i})">練習</button>
-      ${t.kind==='retest'
-        ?`<button class="go test" onclick="test(${t.i},2)">テストB</button>`
-        :`<button class="go test" onclick="test(${t.i})">テストA</button>`}</div>`;
+      <button class="go test" onclick="test(${t.i})">テストA</button>
+      <button class="go test" onclick="test(${t.i},2)">テストB</button></div>`;
   });
   /* 単元カード */
   /* 2週間の予定表 */
@@ -1861,7 +1860,7 @@ function test(i,v){
   let h=`<div class="bar"><span class="tmr" id="tmr">${tt.min}:00</span>
     <span class="sc" id="score">得点 <b>–</b> / 100</span><span style="flex:1"></span>
     <button class="submit" onclick="submitTest(${i},${isB?2:1})">採点する</button></div>
-    <h2 style="margin:4px 0 14px">${u.code}　${u.name}　模擬テスト${isB?'B':'A'} <span style="font-size:13px;color:var(--sub)">（${tt.min}分・100点満点${isB?'・再チャレンジ用':''}）</span></h2>`;
+    <h2 style="margin:4px 0 14px">${u.code}　${u.name}　模擬テスト${isB?'B':'A'} <span style="font-size:13px;color:var(--sub)">（${tt.min}分・100点満点）</span></h2>`;
   tt.p.forEach((p,n)=>{FLAT[uid][n]=p;p._ok=false;h+=probHTML(uid,n,p,'問'+(n+1),true);});
   recIdx=null;
   h+=`<div id="res"></div>`;
@@ -1883,7 +1882,7 @@ function submitTest(i,v){
    if(got<90)L.r[u.code]=addDays(today(),2); else delete L.r[u.code];
    saveLog(L);}
   const nextMsg=got>=90?'⭐ 90点クリア！おめでとう！'
-    :`90点まであと${90-got}点　→ ${mdd(addDays(today(),2))} に、${isB?'まちがえた問題を復習してもう一度':'テストB（べつの問題）で再チャレンジしよう'}`;
+    :`90点まであと${90-got}点　→ まちがえた問題を復習して、${mdd(addDays(today(),2))} に再チャレンジしよう（テスト${isB?'A':'B'}が おすすめ）`;
   document.getElementById('res').innerHTML=`<div class="resultbox">
     <div class="lbl">${u.code} ${u.name}　模擬テスト${isB?'B':'A'}</div>
     <div class="big">${got}<span style="font-size:20px;color:var(--sub)"> / 100点</span></div>
